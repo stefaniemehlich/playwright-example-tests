@@ -1,7 +1,7 @@
 {
-  "name": "projekt-lebenslauf",
+  "name": "playwright-example-website-tests",
   "version": "1.0.0",
-  "description": "Playwright-Tests für eine Beispiel-Website",
+  "description": "Automated end-to-end tests with Playwright for the draft of an example website (Dellen Company); no backend, nothing is actually submitted.",
   "private": true,
   "author": "Stefanie Mehlich",
   "scripts": {
@@ -15,7 +15,7 @@
     "url": "git+https://stefaniemehlich@github.com/stefaniemehlich/Example_Project.git"
   },
   "keywords": [],
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/stefaniemehlich/Example_Project/issues"
