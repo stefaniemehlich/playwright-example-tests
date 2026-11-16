@@ -37,7 +37,7 @@ test('Startseite: lädt ohne JavaScript-Fehler und ohne fehlgeschlagene Anfragen
     await page.goto('/');
     await scrollThroughPage(page);
     // wait until the lazy images have finished loading
-    // eslint-disable-next-line playwright/no-networkidle -- statische Seite ohne Hintergrund-Anfragen; hier soll jede begonnene Anfrage abgewartet werden
+    // eslint-disable-next-line playwright/no-networkidle -- static page without background requests; every request that has started should be awaited here
     await page.waitForLoadState('networkidle');
 
     expect(errors, 'Fehler beim Laden der Seite').toEqual([]);
@@ -49,11 +49,10 @@ test('Startseite: lädt ohne JavaScript-Fehler und ohne fehlgeschlagene Anfragen
 const widths = [821, 1280, 1920];
 
 for (const width of widths) {
-
     test(`Startseite - Desktop (${width} px): kein horizontales Scrollen`, expectedResult(
         'Die Seite ist nicht breiter als das Fenster'
     ), async ({ page }) => {
-        await page.setViewportSize({ width: width, height: 900 });
+        await page.setViewportSize({ width, height: 900 });
         await page.goto('/');
         // only measure once the real font has loaded (font-display: swap)
         await page.evaluate(() => document.fonts.ready);

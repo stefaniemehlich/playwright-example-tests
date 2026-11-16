@@ -9,7 +9,6 @@ const MIN_ANSWER_LENGTH = 50;
 // The button with the question text inside an FAQ entry
 const questionButton = (item: Locator) => item.getByRole('button');
 
-
 // ─── Content (independent of the layout) ────────────────────────
 
 test.describe('FAQ - allgemein', () => {

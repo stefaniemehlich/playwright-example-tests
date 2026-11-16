@@ -168,8 +168,8 @@ test('Bewertungen: Wechsel automatisch im eingestellten Takt', expectedResult(
 //
 // more widths need to be added if the font size ever scales with the viewport (e.g. clamp)
 const viewports = [
-    { name: 'Smartphone', width: 320, height: 640 },
-    { name: 'Desktop', width: 821, height: 900 },
+    { name: 'Smartphone', width: 320, height: 568 },
+    { name: 'Desktop', width: 821, height: 800 },
 ];
 
 for (const viewport of viewports) {

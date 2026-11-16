@@ -10,7 +10,7 @@ This is my first example project with Playwright: automated end-to-end tests for
 
 ## At a glance
 
-- 242 test cases in 12 test files, each run in Chromium, Firefox, and WebKit
+- 262 test cases in 12 test files, each run in Chromium, Firefox, and WebKit
 - TypeScript with type checking
 - Shared helper functions in `tests/helpers/`
 - ESLint, including a rule that catches missing `await`
@@ -24,8 +24,8 @@ This is my first example project with Playwright: automated end-to-end tests for
 
 | Area | Test file | Content |
 |---|---|---|
-| "Check damage" form | `damage-form.spec.ts` | Required fields, validation of all fields, upload, submit flow (success/error state) |
-| Floating buttons and overlay | `cta-float.spec.ts` | Visibility, position while scrolling, opening and closing |
+| "Check damage" form | `damage-form.spec.ts` | Required fields, validation of all fields, upload, submit flow (success/error state), submitting with the keyboard, closing the overlay |
+| Floating buttons | `cta-float.spec.ts` | Visibility, position while scrolling, opening the overlay |
 | Gallery and reviews | `gallery.spec.ts`, `reviews.spec.ts` | Arrows, infinite loop, automatic rotation, position indicator |
 | FAQ | `faq.spec.ts` | Expand/collapse, content |
 | Navigation and footer | `navbar*.spec.ts`, `footer.spec.ts` | Internal and external links |
@@ -33,16 +33,17 @@ This is my first example project with Playwright: automated end-to-end tests for
 
 ## Main focus: the damage form
 
-The 159 tests in `damage-form.spec.ts` best show how I design tests:
+The 190 tests in `damage-form.spec.ts` best show how I design tests:
 
 - **Table-driven test data:** each row is a test case with an input and
   expected message. A new case is a new row.
 - **Boundary values:** e.g. 50 and 51 characters for the name field, 15 and 16
   digits for the phone number, 20 MB and 20 MB + 1 byte for the upload.
 - **Positive and negative tests** are separated with tags and can be run
-  individually.
+  individually. Each form field has its own tag as well.
 - **Flows:** combinations of required fields, adding missing information
-  afterwards, correcting invalid values, reopening the form before and after submission.
+  afterwards, correcting invalid values, several errors at once, submitting
+  with the keyboard, reopening the form before and after submission.
 
 ## Deliberately out of scope
 
@@ -66,6 +67,7 @@ Prerequisite: Node.js
 | `npm test` | all tests in all three browsers |
 | `npx playwright test --ui` | view and run tests individually |
 | `npx playwright test --grep @negativtest` | only the negative tests |
+| `npx playwright test --grep @validierung-plz` | all tests of one form field (here: postal code) |
 | `npm run lint` | run ESLint |
 | `npm run typecheck` | type checking |
 | `npm run writeDokuTestcases` | regenerate `dokuTestcases.md` |

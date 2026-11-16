@@ -332,25 +332,25 @@ function correctionTest(field: Exclude<InputField, 'upload'>, invalidInput: stri
                 + 'Nach der Korrektur verschwinden Meldung und rote Markierung, zweites Absenden zeigt die Danke-Ansicht.'),
             tag: [CORRECTION_TAG, VALIDATION_TAG[field]],
         }, async ({ page }) => {
-                await openDamageForm(page);
-                await fillFields(page, REQUIRED_FIELDS.filter(requiredField => requiredField !== field));
-                await fillFields(page, [field], { [field]: invalidInput });
+            await openDamageForm(page);
+            await fillFields(page, REQUIRED_FIELDS.filter(requiredField => requiredField !== field));
+            await fillFields(page, [field], { [field]: invalidInput });
 
-                // Submit with Enter: the cursor stays in the field, so the message must come from the submit itself
-                await fieldInput(page, field).press('Enter');
-                await expectInvalidSubmit(page, [field], field);
-                await expect(fieldInput(page, field), 'Feld rot markiert').toHaveClass(/is-invalid/);
+            // Submit with Enter: the cursor stays in the field, so the message must come from the submit itself
+            await fieldInput(page, field).press('Enter');
+            await expectInvalidSubmit(page, [field], field);
+            await expect(fieldInput(page, field), 'Feld rot markiert').toHaveClass(/is-invalid/);
 
-                await fillFields(page, [field]);   // overwrite with the valid value from VALID_INPUTS
+            await fillFields(page, [field]);   // overwrite with the valid value from VALID_INPUTS
 
-                await test.step('kein Hinweis und keine rote Markierung', async () => {
-                    await expect(fieldError(page, field), 'keine Meldung').toBeEmpty();
-                    await expect(fieldInput(page, field), 'Feld nicht rot markiert').not.toHaveClass(/is-invalid/);
-                });
-
-                await submit(page);
-                await expectSuccessfulSubmit(page);
+            await test.step('kein Hinweis und keine rote Markierung', async () => {
+                await expect(fieldError(page, field), 'keine Meldung').toBeEmpty();
+                await expect(fieldInput(page, field), 'Feld nicht rot markiert').not.toHaveClass(/is-invalid/);
             });
+
+            await submit(page);
+            await expectSuccessfulSubmit(page);
+        });
 }
 
 // ─── Test set A: different combinations of required fields ──────
@@ -638,7 +638,6 @@ test.describe(VALIDATION_GROUP, () => {
 });
 
 // ─── Test set B9: character counter of the message ──────────────
-// Character counter below the message field
 type CounterTest = {
     description: string;
     input: string;
@@ -766,7 +765,6 @@ test.describe(VALIDATION_GROUP, () => {
 });
 
 // ─── Test set B11: names of the selected files ──────────────────
-// Names of the selected files, shown inside the upload area
 type FileNamesTest = {
     description: string;
     selections: string[][];   // file names of each selection, one after the other
@@ -967,10 +965,10 @@ test.describe('Schaden-Formular: Overlay schließen', () => {
     ), async ({ page }) => {
         const body = page.locator('body');
         await page.goto('/');
-        await expect(body, 'Seite ist schon vor dem Öffnen gesperrt').not.toHaveCSS('overflow', 'hidden');
+        await expect(body, 'Seite ist vor dem Öffnen scrollbar').not.toHaveCSS('overflow', 'hidden');
 
         await openOverlay(page);
-        await expect(body, 'Seite ist bei offenem Overlay nicht gesperrt').toHaveCSS('overflow', 'hidden');
+        await expect(body, 'Seite ist bei offenem Overlay gesperrt').toHaveCSS('overflow', 'hidden');
 
         await closeOverlay(page, 'x');   // also checks that the page can be scrolled again
     });
@@ -1007,10 +1005,6 @@ test.describe('Schaden-Formular: Danke-Ansicht schließen', () => {
     });
 });
 
-
-
-
-
 // ─── Test set G: reopening ──────────────────────────────────────
 
 test('Schaden-Formular: Befülltes Formular ist nach dem Schließen beim erneuten Öffnen weiterhin befüllt', expectedResult(
@@ -1031,7 +1025,6 @@ test('Schaden-Formular: Befülltes Formular ist nach dem Schließen beim erneute
     await expect(messageCounter(page), 'Zähler zeigt weiterhin die Länge der Nachricht').toHaveText(`${VALID_INPUTS.message.length} / 1000`);
     await expect(fileNames(page), 'ausgewählte Datei entspricht der Vorherigen').toHaveText(VALID_INPUTS.upload.name);
 });
-
 
 // ─── Test set H: submit with the keyboard ───────────────────────
 // For visitors without a mouse: Tab to "Anfrage absenden", then Enter or Space.
@@ -1060,6 +1053,48 @@ test.describe('Schaden-Formular: Absenden per Tastatur', () => {
 
             await tabTo(page, submitButton(page));
             await page.keyboard.press(submitKey.key);
+            await expectSuccessfulSubmit(page);
+        });
+    }
+});
+
+// ─── Test set I: submit straight from a field ───────────────────
+// When a visitor submits without leaving the last field first, the field gets no blur event –
+// so the page must tidy up the values (remove the outer spaces) during the submit itself.
+const DIRECT_SUBMIT_WAYS: { description: string; submit: (page: Page, field: InputField) => Promise<void> }[] = [
+    { description: 'Klick auf den Button', submit: page => submit(page) },
+    { description: 'Enter im Feld', submit: (page, field) => fieldInput(page, field).press('Enter') },
+];
+
+test.describe('Schaden-Formular: Absenden direkt aus einem Feld', () => {
+    for (const way of DIRECT_SUBMIT_WAYS) {
+        // I1: Firefox treats an email field with only spaces as invalid until its value is set again
+        test(`Mail nur mit Leerzeichen, direkt absenden (${way.description})`, expectedResult(
+            'Das freiwillige Mail-Feld blockiert das Absenden nicht, Danke-Ansicht mit Vornamen erscheint'
+        ), async ({ page }) => {
+            await openDamageForm(page);
+            await fillFields(page, REQUIRED_FIELDS);
+            await fillFields(page, ['email'], { email: '   ' });
+
+            await way.submit(page, 'email');
+            await expectSuccessfulSubmit(page);
+        });
+
+        // I2: the value is read at the moment of the submit event – afterwards the page clears the form
+        test(`Ort mit Leerzeichen außen, direkt absenden (${way.description})`, expectedResult(
+            'Beim Absenden steht der Ort ohne die Leerzeichen außen im Feld („Graz“), Danke-Ansicht mit Vornamen erscheint'
+        ), async ({ page }) => {
+            await openDamageForm(page);
+            await fillFields(page, REQUIRED_FIELDS);
+            await fillFields(page, ['city'], { city: '  Graz  ' });
+
+            // resolves with the value of the field as soon as the form is submitted
+            const cityAtSubmit = page.evaluate(id => new Promise<string>(resolve => {
+                document.addEventListener('submit', () => resolve((document.getElementById(id) as HTMLInputElement).value), { capture: true, once: true });
+            }), FIELD_ID.city);
+
+            await way.submit(page, 'city');
+            expect(await cityAtSubmit, 'Ort beim Absenden ohne Leerzeichen außen').toBe('Graz');
             await expectSuccessfulSubmit(page);
         });
     }

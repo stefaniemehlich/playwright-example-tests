@@ -1681,6 +1681,17 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         counter.textContent = form.elements.mitteilung.value.length + ' / 1000';
       }
 
+      // Remove the spaces at both ends of a text field
+      function removeOuterSpaces(input) {
+        // Firefox: an email field with only spaces stays invalid although value is already '' –
+        // only setting value again fixes that
+        if (input.value !== input.value.trim() || (input.type === 'email' && input.value === '')) {
+          input.value = input.value.trim();
+          validate(input);
+          updateCounter();   // trimmed text does not fire an input event
+        }
+      }
+
       let firstInvalid = null;
       checkedFields.forEach(input => {
         validate(input);
@@ -1692,13 +1703,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         });
         if (input.type !== 'file') {
           input.addEventListener('blur', () => {
-            // Firefox: an email field with only spaces stays invalid although value is already '' –
-            // only setting value again fixes that
-            if (input.value !== input.value.trim() || (input.type === 'email' && input.value === '')) {
-              input.value = input.value.trim();
-              validate(input);
-              updateCounter();   // trimmed text does not fire an input event
-            }
+            removeOuterSpaces(input);
             input.dataset.touched = 'true';
             showError(input);
           });
@@ -1759,7 +1764,15 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       // Pressing the mouse button on "Anfrage absenden" must not take the focus away from the field:
       // otherwise the field shows its message right away, the button moves down and the click
       // (mouse released at the old position) is lost. The message then comes from the submit itself.
-      form.querySelector('.schaden-form__submit').addEventListener('mousedown', e => e.preventDefault());
+      const submitBtn = form.querySelector('.schaden-form__submit');
+      submitBtn.addEventListener('mousedown', e => e.preventDefault());
+
+      // A submit straight from a field (click as above, or Enter) skips the blur of that field –
+      // so remove the outer spaces of all text fields here. Every way of submitting triggers this click,
+      // and it runs before the browser checks the form.
+      submitBtn.addEventListener('click', () => {
+        checkedFields.filter(input => input.type !== 'file').forEach(removeOuterSpaces);
+      });
 
       // Only fires when all fields are valid (required fields filled in, no invalid values)
       form.addEventListener('submit', e => {

@@ -70,7 +70,7 @@ test('Bilder: Favicon kann geladen werden', expectedResult(
     expect(await findUnloadableImages(page, iconUrls), 'Favicon kann nicht geladen werden').toEqual([]);
 });
 
-// ─── loading="lazy" ───────────────
+// ─── loading="lazy" ─────────────────────────────────────────────
 
 // Which images are visible depends on the layout, not on the exact width –
 // so one width per layout, the narrowest as in the other test files
@@ -80,7 +80,6 @@ const viewports = [
 ];
 
 for (const viewport of viewports) {
-
     test(`Bilder - ${viewport.name} (${viewport.width} px): loading="lazy"`, expectedResult(
         'Sichtbare Bilder unterhalb des Heroes haben loading="lazy", Bilder im oder über dem Hero nicht'
     ), async ({ page }) => {
