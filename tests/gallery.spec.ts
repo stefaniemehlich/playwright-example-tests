@@ -5,6 +5,8 @@ import {
     checkArrows, checkEndlessLoop, checkAutoplay,
 } from './helpers/slider';
 
+// Doku-Titel: Tests der Galerie
+
 // ─── Helper functions for the gallery only ──────────────────────
 
 // Image URL of the currently active image

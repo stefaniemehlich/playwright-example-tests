@@ -2,65 +2,110 @@ import { test, expect, type Locator } from '@playwright/test';
 import { expectedResult } from './helpers/addExpectedResult';
 import { normalizeWhitespace } from './helpers/normalizeWhitespace';
 
+// Doku-Titel: Tests der FAQ
+
 const MIN_ANSWER_LENGTH = 50;
 
 // The button with the question text inside an FAQ entry
 const questionButton = (item: Locator) => item.getByRole('button');
 
-// ─── Behavior ───────────────────────────────────────────────────
+
+// ─── Content (independent of the layout) ────────────────────────
+
+test.describe('FAQ - allgemein', () => {
+    test(`zu jeder Frage gibt es eine Antwort mit mind. ${MIN_ANSWER_LENGTH} Zeichen`, expectedResult(
+        `Jeder FAQ-Eintrag hat eine Frage und eine Antwort mit mind. ${MIN_ANSWER_LENGTH} Zeichen`
+    ), async ({ page }) => {
+        await page.goto('/');
+
+        const items = page.locator('.faq__item');
+        const itemCount = await items.count();
+        expect(itemCount, 'Keine FAQ-Einträge gefunden (Klasse .faq__item)').toBeGreaterThan(0);
+
+        for (let i = 0; i < itemCount; i++) {
+            const item = items.nth(i);
+
+            const question = normalizeWhitespace(await questionButton(item).textContent());
+            const label = question ? `„${question}“` : `FAQ Nr. ${i + 1}`;
+            // expect.soft: the test keeps running, all failures are reported together at the end
+            expect.soft(question, `FAQ Nr. ${i + 1} hat keine Frage`).not.toBe('');
+
+            const answer = normalizeWhitespace(await item.locator('.faq__answer').textContent());
+            expect.soft(answer.length, `${label}: Antwort zu kurz (${answer.length} Zeichen, mind. ${MIN_ANSWER_LENGTH})`)
+                .toBeGreaterThanOrEqual(MIN_ANSWER_LENGTH);
+        }
+    });
+});
+
+// ─── Layouts ────────────────────────────────────────────────────
 
 // Desktop (from 821 px): list on the left, image on the right – always exactly one question open
 // Smartphone (up to 820 px): accordion without image – all closed on load, a second click collapses
-const viewports = [
-    { name: 'Desktop', width: 1280, height: 800, openOnLoad: 1, secondClickCloses: false },
-    { name: 'Smartphone', width: 390, height: 844, openOnLoad: 0, secondClickCloses: true },
+//
+// Each layout is tested at its narrowest width: there the answers need the most lines,
+// which matters for "keine Antwort wird abgeschnitten". The behavior is the same at every width of a layout.
+// More widths need to be added if the font size ever scales with the viewport (e.g. clamp).
+const layouts = [
+    { name: 'Desktop', width: 821, height: 800, showsImage: true, openOnLoad: 1, secondClickCloses: false },
+    { name: 'Smartphone', width: 320, height: 568, showsImage: false, openOnLoad: 0, secondClickCloses: true },
 ];
 
-for (const viewport of viewports) {
-    test.describe(`FAQ (${viewport.name})`, () => {
-        test.use({ viewport: { width: viewport.width, height: viewport.height } });
+for (const layout of layouts) {
+    test.describe(`FAQ - ${layout.name} (${layout.width} px)`, () => {
+        test.use({ viewport: { width: layout.width, height: layout.height } });
 
-        test(`zu jeder Frage gibt es eine Antwort mit mind. ${MIN_ANSWER_LENGTH} Zeichen und ein Bild`, expectedResult(
-            `Jeder FAQ-Eintrag hat eine Frage, eine Antwort mit mind. ${MIN_ANSWER_LENGTH} Zeichen und ein Bild; nach dem Klick wird das passende Bild eingesetzt`
-        ), async ({ page }) => {
-            await page.goto('/');
+        // ─── Image (only shown in the desktop layout) ───────────────
 
-            const items = page.locator('.faq__item');
-            const itemCount = await items.count();
-            expect(itemCount, 'Keine FAQ-Einträge gefunden (Klasse .faq__item)').toBeGreaterThan(0);
+        if (layout.showsImage) {
+            test('jedes Bild wird nur bei einer Frage verwendet', expectedResult(
+                'Kein Bild (data-img) ist bei mehr als einer Frage hinterlegt'
+            ), async ({ page }) => {
+                await page.goto('/');
 
-            for (let i = 0; i < itemCount; i++) {
-                const item = items.nth(i);
+                const imageUrls = await page.locator('.faq__item').evaluateAll(faqItems => faqItems.map(item => item.getAttribute('data-img') ?? ''));
+                const duplicates = [...new Set(imageUrls.filter((imageUrl, i) => imageUrls.indexOf(imageUrl) !== i))];
+                expect(duplicates, 'Diese Bilder werden bei mehreren Fragen verwendet').toEqual([]);
+            });
 
-                const question = normalizeWhitespace(await questionButton(item).textContent());
-                const label = question ? `„${question}“` : `FAQ Nr. ${i + 1}`;
-                // expect.soft: the test keeps running, all failures are reported together at the end
-                expect.soft(question, `FAQ Nr. ${i + 1} hat keine Frage`).not.toBe('');
+            // tests/images.spec.ts checks that the server delivers these images
+            test('jede Frage hat ein Bild', expectedResult(
+                'Bei jeder Frage ist ein Bild hinterlegt (data-img); nach dem Klick wird genau dieses Bild sichtbar im Bildbereich angezeigt'
+            ), async ({ page }) => {
+                await page.goto('/');
 
-                const answer = normalizeWhitespace(await item.locator('.faq__answer').textContent());
-                expect.soft(answer.length, `${label}: Antwort zu kurz (${answer.length} Zeichen, mind. ${MIN_ANSWER_LENGTH})`)
-                    .toBeGreaterThanOrEqual(MIN_ANSWER_LENGTH);
+                const items = page.locator('.faq__item');
+                const itemCount = await items.count();
+                expect(itemCount, 'Keine FAQ-Einträge gefunden (Klasse .faq__item)').toBeGreaterThan(0);
+                const faqImage = page.locator('#faqImg');
 
-                // image is set …
-                const imageUrl = (await item.getAttribute('data-img')) ?? '';
-                expect.soft(imageUrl, `${label}: kein Bild hinterlegt (data-img)`).not.toBe('');
+                for (let i = 0; i < itemCount; i++) {
+                    const item = items.nth(i);
+                    const question = normalizeWhitespace(await questionButton(item).textContent());
+                    const label = question ? `„${question}“` : `FAQ Nr. ${i + 1}`;
 
-                // … and is inserted after the click (the script swaps it after 300 ms;
-                // on smartphones the image is hidden but still swapped)
-                await questionButton(item).click();
-                await expect.soft(page.locator('#faqImg'), `${label}: nach dem Klick wird nicht das passende Bild eingesetzt`)
-                    .toHaveAttribute('src', imageUrl);
-            }
-        });
+                    // expect.soft: the test keeps running, all failures are reported together at the end
+                    const imageUrl = (await item.getAttribute('data-img')) ?? '';
+                    expect.soft(imageUrl, `${label}: kein Bild hinterlegt (data-img)`).not.toBe('');
 
-        test(`beim Laden ${viewport.openOnLoad} Frage(n) offen, nach jedem Klick nur genau die angeklickte`, expectedResult(
-            `Beim Laden ist ${viewport.openOnLoad === 1 ? 'genau eine' : 'keine'} Frage offen; nach jedem Klick ist nur die angeklickte Frage aktiv`
+                    // the script fades the image out, swaps it after 300 ms and fades it in again
+                    await questionButton(item).click();
+                    await expect.soft(faqImage, `${label}: nach dem Klick wird nicht das passende Bild eingesetzt`).toHaveAttribute('src', imageUrl);
+                    await expect.soft(faqImage, `${label}: Bild ist nicht sichtbar`).toBeVisible();
+                    await expect.soft(faqImage, `${label}: Bild wird nicht vollständig eingeblendet`).toHaveCSS('opacity', '1');
+                }
+            });
+        }
+
+        // ─── Opening and closing ────────────────────────────────────
+
+        test(`beim Laden ${layout.openOnLoad} Frage(n) offen, nach jedem Klick nur genau die angeklickte`, expectedResult(
+            `Beim Laden ist ${layout.openOnLoad === 1 ? 'genau eine' : 'keine'} Frage offen; nach jedem Klick ist nur die angeklickte Frage aktiv`
         ), async ({ page }) => {
             await page.goto('/');
 
             const items = page.locator('.faq__item');
             const activeItems = page.locator('.faq__item.is-active');
-            await expect(activeItems, `Beim Laden sind nicht genau ${viewport.openOnLoad} Frage(n) offen`).toHaveCount(viewport.openOnLoad);
+            await expect(activeItems, `Beim Laden sind nicht genau ${layout.openOnLoad} Frage(n) offen`).toHaveCount(layout.openOnLoad);
 
             const itemCount = await items.count();
             for (let i = 0; i < itemCount; i++) {
@@ -70,6 +115,34 @@ for (const viewport of viewports) {
             }
         });
 
+        test(`erneuter Klick auf die offene Frage ${layout.secondClickCloses ? 'klappt sie zu' : 'lässt sie offen'}`, expectedResult(
+            layout.secondClickCloses
+                ? 'Frage klappt zu, Antwort ist ausgeblendet, keine Frage ist mehr offen'
+                : 'Frage bleibt offen, Antwort bleibt sichtbar, genau eine Frage ist offen'
+        ), async ({ page }) => {
+            await page.goto('/');
+
+            const items = page.locator('.faq__item');
+            expect(await items.count(), 'Für diesen Test braucht es mindestens 2 Fragen').toBeGreaterThan(1);
+
+            // open the second question and then click it again
+            const item = items.nth(1);
+            await questionButton(item).click();
+            await questionButton(item).click();
+
+            if (layout.secondClickCloses) {
+                await expect(item, 'Frage ist nach erneutem Klick noch offen').not.toHaveClass(/is-active/);
+                await expect(item.locator('.faq__answer'), 'Antwort ist nach erneutem Klick noch sichtbar').toBeHidden();
+                await expect(page.locator('.faq__item.is-active'), 'Es ist noch eine Frage offen').toHaveCount(0);
+            } else {
+                await expect(item, 'Frage ist nach erneutem Klick nicht mehr offen').toHaveClass(/is-active/);
+                await expect(item.locator('.faq__answer'), 'Antwort ist nach erneutem Klick nicht mehr sichtbar').toBeVisible();
+                await expect(page.locator('.faq__item.is-active'), 'Nicht genau eine Frage offen').toHaveCount(1);
+            }
+        });
+
+        // In both layouts: whether an answer is visible depends on the CSS, and the smartphone layout
+        // has its own rules for the height and padding of the answers
         test('Antworten sind nur bei der aktiven Frage sichtbar', expectedResult(
             'Beim Laden und nach jedem Klick ist nur die Antwort der aktiven Frage sichtbar, alle anderen sind ausgeblendet'
         ), async ({ page }) => {
@@ -98,32 +171,10 @@ for (const viewport of viewports) {
             }
         });
 
-        test(`erneuter Klick auf die offene Frage ${viewport.secondClickCloses ? 'klappt sie zu' : 'lässt sie offen'}`, expectedResult(
-            viewport.secondClickCloses
-                ? 'Frage klappt zu, Antwort ist ausgeblendet, keine Frage ist mehr offen'
-                : 'Frage bleibt offen, Antwort bleibt sichtbar, genau eine Frage ist offen'
-        ), async ({ page }) => {
-            await page.goto('/');
-
-            const items = page.locator('.faq__item');
-            expect(await items.count(), 'Für diesen Test braucht es mindestens 2 Fragen').toBeGreaterThan(1);
-
-            // open the second question and then click it again
-            const item = items.nth(1);
-            await questionButton(item).click();
-            await questionButton(item).click();
-
-            if (viewport.secondClickCloses) {
-                await expect(item, 'Frage ist nach erneutem Klick noch offen').not.toHaveClass(/is-active/);
-                await expect(item.locator('.faq__answer'), 'Antwort ist nach erneutem Klick noch sichtbar').toBeHidden();
-                await expect(page.locator('.faq__item.is-active'), 'Es ist noch eine Frage offen').toHaveCount(0);
-            } else {
-                await expect(item, 'Frage ist nach erneutem Klick nicht mehr offen').toHaveClass(/is-active/);
-                await expect(item.locator('.faq__answer'), 'Antwort ist nach erneutem Klick nicht mehr sichtbar').toBeVisible();
-                await expect(page.locator('.faq__item.is-active'), 'Nicht genau eine Frage offen').toHaveCount(1);
-            }
-        });
-
+        // Also tested in the smartphone layout, although phones rarely have a keyboard:
+        // the smartphone layout is not only used on phones. Anyone who zooms in on a desktop computer
+        // gets it as well (e.g. 200 % on a 1280 px wide screen leaves 640 px) – and people who zoom in
+        // because they see poorly often use the keyboard instead of the mouse.
         test('Fragen lassen sich per Tastatur öffnen', expectedResult(
             'Frage ist fokussierbar und öffnet mit Enter; aria-expanded ist bei der offenen Frage "true", bei der geschlossenen "false"'
         ), async ({ page }) => {
@@ -144,33 +195,10 @@ for (const viewport of viewports) {
             await expect(questionButton(items.nth(0)), 'aria-expanded der geschlossenen Frage ist nicht "false"')
                 .toHaveAttribute('aria-expanded', 'false');
         });
-    });
-}
 
-// ─── Content ────────────────────────────────────────────────────
+        // ─── Answers are not cut off ────────────────────────────────
 
-test('FAQ: jedes Bild wird nur bei einer Frage verwendet', expectedResult(
-    'Kein Bild (data-img) ist bei mehr als einer Frage hinterlegt'
-), async ({ page }) => {
-    await page.goto('/');
-
-    const imageUrls = await page.locator('.faq__item').evaluateAll(faqItems => faqItems.map(item => item.getAttribute('data-img') ?? ''));
-    const duplicates = [...new Set(imageUrls.filter((imageUrl, i) => imageUrls.indexOf(imageUrl) !== i))];
-    expect(duplicates, 'Diese Bilder werden bei mehreren Fragen verwendet').toEqual([]);
-});
-
-// ─── Answers are not cut off ────────────────────────────────────
-
-// open answers are at most 300 px (smartphone) or 200 px (desktop) high –
-// checked at the narrowest width of each layout
-//
-// more widths need to be added if the font size ever scales with the viewport (e.g. clamp)
-const widths = [320, 821];
-
-for (const width of widths) {
-    test.describe(`FAQ bei ${width} px`, () => {
-        test.use({ viewport: { width, height: 900 } });
-
+        // open answers are at most 200 px (desktop) or 300 px (smartphone) high
         test('keine Antwort wird abgeschnitten', expectedResult(
             'Jede geöffnete Antwort passt vollständig in ihre Box, nichts wird abgeschnitten'
         ), async ({ page }) => {

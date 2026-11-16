@@ -2,6 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { expectedResult } from './helpers/addExpectedResult';
 import { normalizeWhitespace } from './helpers/normalizeWhitespace';
 
+// Doku-Titel: Tests der Leistungen
+
 // ─── Helper functions ───────────────────────────────────────────
 
 // One service: a tab with its panel

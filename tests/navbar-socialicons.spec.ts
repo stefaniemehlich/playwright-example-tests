@@ -2,6 +2,8 @@ import { test } from '@playwright/test';
 import { expectedResult } from './helpers/addExpectedResult';
 import { type ExternalLink, checkExternalLink } from './helpers/checkExternalLink';
 
+// Doku-Titel: Tests der Social-Icons in der Navbar
+
 // ─── Test data ──────────────────────────────────────────────────
 
 // social icons to be checked

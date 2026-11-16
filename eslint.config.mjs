@@ -14,12 +14,14 @@ export default defineConfig(
     extends: [playwright.configs['flat/recommended']],
     rules: {
       'playwright/expect-expect': ['warn', {
-        assertFunctionPatterns: ['^check', '^expect', '^runScenario$', '^closeThankYouView$'],
+        assertFunctionPatterns: ['^check', '^expect', '^runScenario$', '^closeOverlay$'],
       }],
       'playwright/no-conditional-in-test': 'off',
       'playwright/no-conditional-expect': 'off',
       'playwright/no-identical-title': 'off',
       'playwright/valid-test-tags': 'off',
+      // skipping is fine with a condition (e.g. browser-specific tests), still warn for unconditional skips
+      'playwright/no-skipped-test': ['warn', { allowConditional: true }],
     },
   },
   // forgotten await (e.g. page.goto() or locator.click() without await) – needs the type information from tsconfig.json

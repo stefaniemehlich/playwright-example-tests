@@ -2,6 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { expectedResult } from './helpers/addExpectedResult';
 import { normalizeWhitespace } from './helpers/normalizeWhitespace';
 
+// Doku-Titel: SEO-Tests
+
 // ─── Helper functions ───────────────────────────────────────────
 
 // One question with its answer, from the SEO schema or from the page

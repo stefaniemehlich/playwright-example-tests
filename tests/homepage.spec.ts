@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import { expectedResult } from './helpers/addExpectedResult';
 import { scrollThroughPage } from './helpers/scroll';
 
+// Doku-Titel: Tests der Startseite
+
 // ─── Loading ────────────────────────────────────────────────────
 
 // tests/seo.spec.ts checks the main heading (h1), the meta description and the page language
@@ -47,19 +49,17 @@ test('Startseite: lädt ohne JavaScript-Fehler und ohne fehlgeschlagene Anfragen
 const widths = [821, 1280, 1920];
 
 for (const width of widths) {
-    test.describe(`Startseite bei ${width} px`, () => {
-        test.use({ viewport: { width, height: 900 } });
 
-        test('kein horizontales Scrollen', expectedResult(
-            'Die Seite ist nicht breiter als das Fenster'
-        ), async ({ page }) => {
-            await page.goto('/');
-            // only measure once the real font has loaded (font-display: swap)
-            await page.evaluate(() => document.fonts.ready);
+    test(`Startseite - Desktop (${width} px): kein horizontales Scrollen`, expectedResult(
+        'Die Seite ist nicht breiter als das Fenster'
+    ), async ({ page }) => {
+        await page.setViewportSize({ width: width, height: 900 });
+        await page.goto('/');
+        // only measure once the real font has loaded (font-display: swap)
+        await page.evaluate(() => document.fonts.ready);
 
-            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-            expect(overflow, `Seite ist ${overflow} px breiter als das Fenster`).toBeLessThanOrEqual(0);
-        });
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        expect(overflow, `Seite ist ${overflow} px breiter als das Fenster`).toBeLessThanOrEqual(0);
     });
 }
 

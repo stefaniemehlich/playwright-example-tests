@@ -3,6 +3,8 @@ import { expectedResult } from './helpers/addExpectedResult';
 import { type AnchorLink, checkAnchorLink } from './helpers/checkAnchorLink';
 import { checkLogoLink } from './helpers/checkLogoLink';
 
+// Doku-Titel: Tests der Navbar
+
 // ─── Test data ──────────────────────────────────────────────────
 
 // links to be checked

@@ -147,8 +147,8 @@
     .btn--green::before {
       content: '';
       position: absolute;
-      inset: 4px; /* Abstand nach außen */
-      border-radius: inherit; /* übernimmt den border-radius vom Elternelement */
+      inset: 4px; /* distance from the outer edge */
+      border-radius: inherit; /* takes the border-radius from the parent element */
       border: 2px solid var(--dellen_black);
     }
     .btn--green:hover { color: var(--dellen_black)}
@@ -175,7 +175,7 @@
     .navbar.navbar--scrolled { background: linear-gradient(to bottom, var(--dellen_black_transparent85) 0%, transparent 100%); }
     .navbar.navbar--scrolled::after { opacity: 1; }
 
-    /* Desktop Navbar-Layout */
+    /* Desktop navbar layout */
     .navbar__inner {
       position: absolute; top: 0; left: 50%; transform: translateX(-50%);
       width: 100%; max-width: var(--max-width);
@@ -200,16 +200,16 @@
     }
     .hero__frame { position: absolute; inset: 0; overflow: hidden; }
 
-    /* KRITISCH: Niemals opacity:0 auf .hero__bg setzen!
-       Kombination von scale() + opacity-Animation erzeugt GPU-Compositing-Spalt. */
+    /* CRITICAL: Never set opacity:0 on .hero__bg!
+       Combining scale() with an opacity animation creates a GPU compositing gap. */
     .hero__bg {
       position: absolute; inset: 0;
       background: var(--dellen_black_transparent85) url('images/Dellenreparatur.webp') center/cover no-repeat;
-      transform: scale(1.06); /* Nicht ändern – verhindert weiße Ränder bei voller Viewport-Breite */
+      transform: scale(1.06); /* Do not change – prevents white edges at full viewport width */
     }
     .hero__overlay {
       position: absolute; inset: 0;
-      /* Radialer statt vertikaler linearer Verlauf, weil der lineare eine sichtbare Linie erzeugt */
+      /* Radial instead of vertical linear gradient, because the linear one creates a visible line */
       background:
         linear-gradient(to right, var(--dellen_black) 0%, transparent 30%, transparent 70%, var(--dellen_black) 100%),
         radial-gradient(ellipse 150% 90% at center, transparent 0%, var(--dellen_black) 50%);
@@ -231,7 +231,7 @@
       display: block; font-size: 11px; font-weight: 500;
       letter-spacing: 0.2em; text-transform: uppercase;
       color: var(--dellen_green); margin-bottom: 20px;
-      font-family: 'Instrument Sans', sans-serif; /* Browser-H1-Standard überschreiben */
+      font-family: 'Instrument Sans', sans-serif; /* override the browser default for h1 */
     }
     .hero__title {
       font-family: 'Bodoni Moda', serif;
@@ -269,22 +269,22 @@
     .statement__title strong { font-weight: 600; }
     .statement__title italic_green { font-style: italic; color: var(--dellen_green); }
 
-    /* Hintergrundbild in den FAQ-Tab-Antworten */
+    /* Background image in the FAQ tab answers */
     .services__bg {
       position: absolute; inset: 0;
       background-image: linear-gradient(180deg, var(--dellen_black) 7%, var(--dellen_black_transparent55) 50%, var(--dellen_black) 93%), var(--bg-image);
-      /* Verlauf 2px höher als die Box, damit am unteren Rand keine helle Naht entsteht */
+      /* Gradient 2px taller than the box, so there is no light seam at the bottom edge */
       background-size: 100% calc(100% + 2px), cover; background-position: center; background-repeat: no-repeat;
       transition: filter 0.4s, opacity 0.4s; z-index: 0;
     }
-    /* Leichter horizontaler Verlauf: links dunkler, damit der Text besser lesbar ist */
+    /* Light horizontal gradient: darker on the left, so the text is easier to read */
     .services__answer .services__bg::after {
       content: ''; position: absolute; inset: -1px; pointer-events: none;
       background: linear-gradient(90deg, var(--dellen_black) 5%, transparent 15%, transparent 85%, var(--dellen_black) 95%);
     }
 
     /* ════════════════════════════
-       GALERIE / SLIDER
+       GALLERY / SLIDER
     ════════════════════════════ */
     .gallery { padding: var(--section-padding) 0; }
     .gallery__header { margin-bottom: 40px; }
@@ -318,10 +318,10 @@
     #reviewsDots { display: flex; }
     .slider-dots .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--white_transparent10); border: 1px solid var(--white_transparent15); cursor: pointer; transition: background 0.2s; }
     .slider-dots .dot.active { background: var(--dellen_green); border-color: var(--dellen_green); }
-    #reviewsDots .dot { cursor: default; } /* nicht anklickbar, nur Anzeige */
+    #reviewsDots .dot { cursor: default; } /* not clickable, display only */
   
     /* ════════════════════════════
-       NACHHALTIGKEIT
+       SUSTAINABILITY
     ════════════════════════════ */
     .sustainability { padding: var(--section-padding) 0; }
     .sustainability__cards { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 64px; text-align: center; }
@@ -330,7 +330,7 @@
     .sustainability__card:last-child { padding-right: 0; border-right: none; }
 
     /* ════════════════════════════
-       BEWERTUNGEN
+       REVIEWS
     ════════════════════════════ */
     .reviews { padding: var(--section-padding) 0; }
     .reviews__header { text-align: left; margin-bottom: 48px; }
@@ -368,7 +368,7 @@
       z-index: 0;
       pointer-events: none;
     }
-    /* Abgedunkelter Verlauf hinter dem Text */
+    /* Darkened gradient behind the text */
     .reviews__slide::before {
       content: '';
       position: absolute;
@@ -381,7 +381,7 @@
     .reviews__slide.is-active::before {
       opacity: 1;
     }
-    /* Hintergrundbild der aktiven Bewertung */
+    /* Background image of the active review */
     .reviews__slide::after {
       content: '';
       position: absolute;
@@ -402,7 +402,7 @@
     /* ════════════════════════════
        FAQ
     ════════════════════════════ */
-    /* Desktop: Liste links, Bild rechts – Handy: siehe Media Query (max-width: 820px) */
+    /* Desktop: list on the left, image on the right – mobile: see media query (max-width: 820px) */
     .faq { padding: var(--section-padding) 0; }
     .faq__header { margin-bottom: 48px; }
     .faq__inner { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
@@ -413,7 +413,7 @@
       background: none; border: none; text-align: left;
       font-family: inherit; font-size: 16px; font-weight: 500; color: var(--softgrey70); cursor: pointer; transition: color 0.2s; }
     .faq__question:focus-visible { outline: 2px solid var(--dellen_green); outline-offset: 4px; }
-    /* „+“-Symbol: nur auf dem Handy sichtbar, als CSS-Inhalt (steht damit nicht im Fragetext) */
+    /* "+" symbol: only visible on mobile, as CSS content (so it is not part of the question text) */
     .faq__question::after { content: '+'; display: none; width: 28px; height: 28px; border: 1px solid var(--white_transparent15); border-radius: 50%; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; color: var(--softgrey70); transition: border-color 0.2s, color 0.2s; }
     .faq__question:hover::after { border-color: var(--dellen_green); color: var(--dellen_green); }
     .faq__item.is-active .faq__question { color: var(--dellen_white); }
@@ -423,7 +423,7 @@
     .faq__visual img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.4s; display: block; }
     .faq__visual::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, var(--dellen_black) 7%, var(--dellen_black_transparent55) 50%, var(--dellen_black) 93%), linear-gradient(90deg, var(--dellen_black) 0%, transparent 10%, transparent 90%, var(--dellen_black) 100%); pointer-events: none; }
 
-    /* ── LEISTUNGEN: Tab-Layout ── */
+    /* ── SERVICES: tab layout ── */
     .services { padding: var(--section-padding) 0; }
     .services__nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 40px; }
     .services__tab { padding: 10px 20px; border-radius: 999px; border: 1px solid var(--white_transparent10); background: none; color: var(--softgrey70); font-size: 15px; font-family: 'Instrument Sans', sans-serif; cursor: pointer; transition: all 0.2s; }
@@ -461,7 +461,7 @@
     .footer__links      { list-style: none; display: flex; flex-direction: column; font-size: 15px; color: var(--softgrey70); line-height: 1.75; }
     .footer__links a    { color: inherit; text-decoration: none; transition: color 0.2s; }
     .footer__links a:hover { color: var(--dellen_white); }
-    .footer__accordion  { display: none; } /* nur Mobile, siehe RESPONSIVE */
+    .footer__accordion  { display: none; } /* mobile only, see RESPONSIVE */
     .footer__bottom       { border-top: 1px solid var(--black_transparent20); padding-top: 36px; display: flex; align-items: center; justify-content: center; }
     .footer__copyright    { font-size: 12px; color: var(--mediumgrey); }
 
@@ -507,7 +507,25 @@
        RESPONSIVE
     ════════════════════════════ */
     @media (max-width: 1120px) {
+      /* Footer: below 1120 px the five columns no longer fit side by side – accordion instead of the table */
       .footer__table th, .footer__table td { display: block; width: 100% !important; padding-right: 0; }
+      .footer__bottom { flex-direction: column; align-items: flex-start; padding-top: 8px; }
+
+      .footer__table thead { display: block; margin-bottom: 8px; }
+      .footer__table thead tr { display: block; }
+      .footer__table thead th:not(:first-child) { display: none; }
+      .footer__table tbody { display: none; }
+      .footer__accordion { display: block; border-bottom: 1px solid var(--black_transparent20); }
+      .footer__acc-trigger {
+        width: 100%; display: flex; align-items: center; justify-content: space-between;
+        background: none; border: none; border-top: 1px solid var(--black_transparent20);
+        padding: 4px 0; cursor: pointer;
+        font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mediumgrey);
+      }
+      .footer__acc-trigger::after { content: '+'; font-size: 16px; font-weight: 300; color: var(--mediumgrey); }
+      .footer__acc-trigger.open::after { content: '−'; }
+      .footer__acc-content { display: none; padding-bottom: 8px; }
+      .footer__acc-content.open { display: block; }
     }
     @media (max-width: 820px) {
       .container { padding: 0 20px; }
@@ -530,7 +548,7 @@
         backdrop-filter: none; -webkit-backdrop-filter: none;
       }
 
-      /* Die Pill */
+      /* The pill */
       .navbar__mobile-pill {
         display: flex; align-items: stretch;
         pointer-events: auto;
@@ -595,7 +613,7 @@
       .sustainability__card:last-child { flex: 0 0 85%; scroll-snap-align: center; padding: 24px; border-right: none; border-top: 1px solid var(--softgreen_transparent50); border-bottom: 1px solid var(--softgreen_transparent50); }
       .cta__box { padding: 48px 24px; }
       .subtitle { font-size: 22px; }
-      /* FAQ: Liste untereinander, zentriert, ohne Bild */
+      /* FAQ: list stacked, centered, without image */
       .faq { text-align: center; }
       .faq__inner { display: block; }
       .faq__visual { display: none; }
@@ -604,30 +622,13 @@
       .faq__item + .faq__item::before { content: ''; display: block; height: 1px; width: 90%; margin: 0 auto; background: var(--softgreen_transparent50); }
       .faq__question { justify-content: center; padding: 20px 24px; text-align: center; font-size: 18px; color: var(--dellen_white); }
       .faq__question::after { display: flex; }
-      .faq__item.is-active .faq__question::after { content: '×'; } /* offene Frage: Klick klappt sie zu */
+      .faq__item.is-active .faq__question::after { content: '×'; } /* open question: a click collapses it */
       .faq__answer { padding: 0 28px; }
       .faq__item.is-active .faq__answer { max-height: 300px; padding: 0 28px 24px; }
       .faq__answer p { line-height: 1.75; padding-top: 16px; border-top: 1px solid var(--black_transparent20); }
       .slider__btn { display: none; }
       .cta-float { left: 50%; right: auto; transform: translateX(-50%); bottom: 16px; }
       .cta-float.scrollhide { transform: translateX(-50%) translateY(15%); }
-      .footer__bottom { flex-direction: column; align-items: flex-start; padding-top: 8px; }
-
-      .footer__table thead { display: block; margin-bottom: 8px; }
-      .footer__table thead tr { display: block; }
-      .footer__table thead th:not(:first-child) { display: none; }
-      .footer__table tbody { display: none; }
-      .footer__accordion { display: block; border-bottom: 1px solid var(--black_transparent20); }
-      .footer__acc-trigger {
-        width: 100%; display: flex; align-items: center; justify-content: space-between;
-        background: none; border: none; border-top: 1px solid var(--black_transparent20);
-        padding: 4px 0; cursor: pointer;
-        font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mediumgrey);
-      }
-      .footer__acc-trigger::after { content: '+'; font-size: 16px; font-weight: 300; color: var(--mediumgrey); }
-      .footer__acc-trigger.open::after { content: '−'; }
-      .footer__acc-content { display: none; padding-bottom: 8px; }
-      .footer__acc-content.open { display: block; }
     }
 
     /* ════════════════════════════
@@ -669,9 +670,9 @@
     .schaden-modal__title {
       font-size: 22px; font-weight: 700; color: var(--dellen_white);
       margin: 0 0 4px;
-      padding-right: 40px; /* Platz für das X */
+      padding-right: 40px; /* room for the X */
     }
-    .schaden-modal__success .schaden-modal__title { padding: 0 40px; } /* zentriert: beidseitig */
+    .schaden-modal__success .schaden-modal__title { padding: 0 40px; } /* centered: on both sides */
     .schaden-modal__sub {
       font-size: 14px; color: var(--softgrey50); margin: 0 0 28px;
     }
@@ -849,7 +850,7 @@
     </div>
   </section>
 
-  <!-- ═══ LEISTUNGEN ═══ -->
+  <!-- ═══ SERVICES ═══ -->
   <section class="services" id="leistungen">
     <div class="container">
       <div class="section-header reveal">
@@ -894,7 +895,7 @@
     </div>
   </section>
 
-  <!-- ═══ GALERIE ═══ -->
+  <!-- ═══ GALLERY ═══ -->
   <section class="gallery" id="galerie">
     <div class="container">
       <div class="gallery__header reveal">
@@ -927,7 +928,7 @@
     </div>
   </section>
 
-  <!-- ═══ Nachhaltigkeit ═══ -->
+  <!-- ═══ SUSTAINABILITY ═══ -->
   <section class="sustainability" id="nachhaltigkeit">
     <div class="container">
       <div class="section-header reveal">
@@ -966,7 +967,7 @@
   </section>
 
 
-  <!-- ═══ BEWERTUNGEN ═══ -->
+  <!-- ═══ REVIEWS ═══ -->
   <section class="reviews" id="bewertungen">
     <div class="container">
       <div class="reviews__header reveal">
@@ -1028,7 +1029,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
     </div>
   </section>
 
-  <!-- ═══ FAQ (Desktop und Handy) ═══ -->
+  <!-- ═══ FAQ ═══ -->
   <section class="faq">
     <div class="container">
       <div class="faq__header reveal">
@@ -1065,7 +1066,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
     </div>
   </section>
 
-  <!-- ═══ CTA / KONTAKT ═══ -->
+  <!-- ═══ CTA / CONTACT ═══ -->
   <section class="cta" id="kontakt">
     <div class="container">
       <div class="cta__box reveal">
@@ -1207,7 +1208,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         <div class="schaden-form__row">
           <div class="schaden-form__group">
             <label class="schaden-form__label" for="sf-plz">PLZ</label>
-            <input class="schaden-form__input" type="text" id="sf-plz" name="plz" placeholder="12345" inputmode="numeric" maxlength="5" aria-describedby="sf-plz-error" autocomplete="postal-code">
+            <input class="schaden-form__input" type="text" id="sf-plz" name="plz" placeholder="12345" inputmode="numeric" aria-describedby="sf-plz-error" autocomplete="postal-code">
             <p class="schaden-form__error" id="sf-plz-error" aria-live="polite"></p>
           </div>
           <div class="schaden-form__group">
@@ -1297,7 +1298,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       }, { passive: true });
     }
 
-    // Nav: transparent → Glasmorphism beim Scrollen
+    // Nav: transparent → glassmorphism when scrolling
     const navbar = document.getElementById('navbar');
 
     // Hero Parallax
@@ -1342,7 +1343,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       });
       panel.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
 
-      // Scroll-Hide (nur mobile)
+      // Scroll-hide (mobile only)
       let scrollTimer;
       window.addEventListener('scroll', () => {
         if (!mq.matches) return;
@@ -1355,7 +1356,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       }, { passive: true });
     })();
 
-    // Scroll Reveal: Elemente einblenden wenn sichtbar
+    // Scroll reveal: fade in elements when they become visible
     const revealObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -1366,28 +1367,28 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-    // ─── Endlos-Slider (gemeinsam für Galerie und Bewertungen) ───
-    // Vor und hinter den Original-Slides stehen je 2 Kopien – genug für die seitliche
-    // Vorschau während der Animation. Landet der Slider auf einer Kopie, springt er
-    // nach der Animation unsichtbar zum passenden Original.
+    // ─── Endless slider (shared by gallery and reviews) ───
+    // 2 copies are placed before and after the original slides – enough for the side
+    // preview during the animation. If the slider lands on a copy, it jumps
+    // invisibly to the matching original after the animation.
     const isMobile = () => window.matchMedia('(max-width: 820px)').matches;
     const GAP = 24;
     const SLIDE_RATIO = 0.8;
-    const SLIDE_ANIM_MS = 620; // etwas länger als die CSS-Animation (0.6 s)
+    const SLIDE_ANIM_MS = 620; // slightly longer than the CSS animation (0.6 s)
 
-    // track: Element mit den Slides, slideRatio(): Slide-Breite im Verhältnis zum Container,
-    // onChange(index): wird mit dem Index des aktiven Original-Slides aufgerufen
+    // track: element with the slides, slideRatio(): slide width relative to the container,
+    // onChange(index): called with the index of the active original slide
     function createLoopSlider(track, slideRatio, onChange) {
       const originals = [...track.children];
       const count  = originals.length;
       const clones = Math.min(2, count);
 
-      // Kopien in richtiger Reihenfolge: vorn die letzten, hinten die ersten Slides
+      // Copies in the right order: the last slides in front, the first slides at the end
       track.prepend(...originals.slice(-clones).map(s => s.cloneNode(true)));
       track.append(...originals.slice(0, clones).map(s => s.cloneNode(true)));
 
-      let current = clones; // Index des ersten Originals
-      let busy = false;     // während der Animation werden weitere Schritte ignoriert
+      let current = clones; // index of the first original
+      let busy = false;     // further steps are ignored during the animation
 
       const containerW = () => track.parentElement.offsetWidth;
       const slideW     = () => containerW() * slideRatio();
@@ -1417,7 +1418,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         busy = true;
         goTo(current + direction);
         setTimeout(() => {
-          // auf einer Kopie gelandet → unsichtbar zum Original springen
+          // landed on a copy → jump invisibly to the original
           if (current >= clones + count) goTo(current - count, false);
           else if (current < clones)     goTo(current + count, false);
           busy = false;
@@ -1434,7 +1435,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       return { next: () => step(1), prev: () => step(-1) };
     }
 
-    // Wischen auf dem Handy: nach links = weiter, nach rechts = zurück
+    // Swiping on mobile: left = next, right = back
     function addSwipe(element, onNext, onPrev) {
       let startX = 0;
       element.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
@@ -1444,7 +1445,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       }, { passive: true });
     }
 
-    // ─── Galerie ───
+    // ─── Gallery ───
     const sliderTrack = document.getElementById('sliderTrack');
     const sliderProgressFill = document.getElementById('sliderProgressFill');
     const galleryCount = sliderTrack.children.length;
@@ -1454,9 +1455,9 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
     });
 
     let autoPlay;
-    const GALLERY_TAKT_MS = 4000; // Takt des Auto-Plays in ms
+    const GALLERY_TAKT_MS = 4000; // auto-play interval in ms
     function stopAutoPlay()  { clearInterval(autoPlay); }
-    // erst stoppen, damit nie zwei Intervalle gleichzeitig laufen; auf dem Handy kein Auto-Play
+    // stop first, so two intervals never run at the same time; no auto-play on mobile
     function startAutoPlay() { stopAutoPlay(); if (!isMobile()) autoPlay = setInterval(next, GALLERY_TAKT_MS); }
 
     startAutoPlay();
@@ -1466,7 +1467,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
     document.getElementById('sliderNext').addEventListener('click', () => { next(); startAutoPlay(); });
     addSwipe(sliderTrack.parentElement, () => { next(); startAutoPlay(); }, () => { prev(); startAutoPlay(); });
 
-    // Reviews: Zeitangabe berechnen
+    // Reviews: calculate the time information
     document.querySelectorAll('[data-review-date]').forEach(el => {
       const [year, month] = el.dataset.reviewDate.split('-').map(Number);
       const now = new Date();
@@ -1479,10 +1480,10 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       }
     });
 
-    // ─── Bewertungen ───
+    // ─── Reviews ───
     const reviewsTrack = document.getElementById('reviewsTrack');
 
-    // ein Punkt pro Bewertung (vor dem Anlegen der Kopien zählen)
+    // one dot per review (count before the copies are created)
     const rDotsEl = document.getElementById('reviewsDots');
     const rDots = [...reviewsTrack.children].map(() => {
       const dot = document.createElement('span');
@@ -1493,12 +1494,12 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
 
     const { next: rNext, prev: rPrev } = createLoopSlider(
       reviewsTrack,
-      () => isMobile() ? 1 : SLIDE_RATIO,  // auf dem Handy volle Breite
+      () => isMobile() ? 1 : SLIDE_RATIO,  // full width on mobile
       i => rDots.forEach((d, j) => d.classList.toggle('active', j === i))
     );
 
     let rAutoPlay;
-    const REVIEWS_TAKT_MS = 5000; // Takt des Auto-Plays in ms
+    const REVIEWS_TAKT_MS = 5000; // auto-play interval in ms
     function rStartAutoPlay() { clearInterval(rAutoPlay); rAutoPlay = setInterval(rNext, REVIEWS_TAKT_MS); }
     rStartAutoPlay();
 
@@ -1506,7 +1507,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
     document.getElementById('reviewsNext').addEventListener('click', () => { rNext(); rStartAutoPlay(); });
     addSwipe(reviewsTrack.parentElement, () => { rNext(); rStartAutoPlay(); }, () => { rPrev(); rStartAutoPlay(); });
 
-    // Footer Akkordeon (Mobile)
+    // Footer accordion (mobile)
     const footerAcc = document.querySelector('.footer__accordion');
     if (footerAcc) {
       footerAcc.querySelectorAll('.footer__acc-trigger').forEach(btn => {
@@ -1518,7 +1519,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       });
     }
 
-    // CTA-Float: über Footer schweben
+    // CTA float: float above the footer
     (function () {
       const floatBtn = document.querySelector('.cta-float');
       const footer   = document.querySelector('.footer');
@@ -1530,7 +1531,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         const footerTop     = footer.getBoundingClientRect().top;
         const overlap       = window.innerHeight - footerTop;
         const defaultBottom = mqMobile.matches ? 16 : 36;
-        //overlap 36 für Footer - variable Pixelangabe, damit es oben stehen bleibt, bevor der Footer ganz zu sehen ist
+        // overlap 36 for the footer – variable pixel value, so it stays above before the footer is fully visible
         if (overlap > 16) {
           floatBtn.style.bottom = (overlap + 48) + 'px';
         } else {
@@ -1545,12 +1546,12 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
     })();
 
 
-    // FAQ – Desktop: immer genau eine Frage offen, ein Klick wechselt auch das Bild.
-    //       Handy: Akkordeon – Klick öffnet eine Frage, erneuter Klick klappt sie zu.
+    // FAQ – desktop: always exactly one question open, a click also changes the image.
+    //       Mobile: accordion – a click opens a question, another click collapses it.
     const faqImg = document.getElementById('faqImg');
     const faqItems = [...document.querySelectorAll('.faq__item')];
 
-    // genau diesen Eintrag öffnen (null = alle zuklappen)
+    // open exactly this entry (null = collapse all)
     function faqOeffnen(offen) {
       faqItems.forEach(i => {
         i.classList.toggle('is-active', i === offen);
@@ -1563,13 +1564,13 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
 
     faqItems.forEach(item => {
       item.addEventListener('click', e => {
-        if (e.target.closest('.faq__answer')) return;  // Klick in den Antworttext ändert nichts
+        if (e.target.closest('.faq__answer')) return;  // a click in the answer text changes nothing
         if (!item.classList.contains('is-active')) faqOeffnen(item);
-        else if (isMobile()) faqOeffnen(null);         // Handy: zuklappen; Desktop: bleibt offen
+        else if (isMobile()) faqOeffnen(null);         // mobile: collapse; desktop: stays open
       });
     });
 
-    // Handy: beim Laden alle zu. Wechsel zum Desktop ohne offene Frage: erste öffnen
+    // Mobile: all collapsed on load. Switch to desktop without an open question: open the first one
     if (isMobile()) faqOeffnen(null);
     window.addEventListener('resize', () => {
       if (!isMobile() && !faqItems.some(i => i.classList.contains('is-active'))) faqOeffnen(faqItems[0]);
@@ -1588,11 +1589,11 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       const successCloseBtn = document.getElementById('schadenSuccessClose');
       const successName = document.getElementById('schadenSuccessName');
 
-      // ── Eingabeprüfung ──
+      // ── Input validation ──
       const MB = 1024 * 1024;
       const counter = document.getElementById('sf-mitteilung-counter');
 
-      // Namen: Buchstaben aller Sprachen; Leerzeichen, Bindestrich, Apostroph nur einzeln zwischen Buchstaben
+      // Names: letters of all languages; space, hyphen, apostrophe only singly between letters
       function nameRule(value, label) {
         if (!value)                               return `Bitte geben Sie Ihren ${label} ein.`;
         if (value.length < 2)                     return 'Bitte mindestens 2 Zeichen eingeben.';
@@ -1602,7 +1603,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         return '';
       }
 
-      // Jede Regel gibt eine Fehlermeldung zurück, oder '' wenn alles passt
+      // Each rule returns an error message, or '' if everything is fine
       const RULES = {
         'sf-vorname': value => nameRule(value, 'Vornamen'),
         'sf-name':    value => nameRule(value, 'Nachnamen'),
@@ -1610,11 +1611,11 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         'sf-telefon': value => {
           if (!value)                          return 'Bitte geben Sie Ihre Telefonnummer ein.';
           if (!/^[0-9+ ()\/-]*$/.test(value))  return 'Nur Ziffern, Leerzeichen und + - / ( ) sind erlaubt.';
-          if (value.lastIndexOf('+') > 0)      return 'Das + ist nur ganz am Anfang erlaubt.';
+          if (value.lastIndexOf('+') > 0)      return 'Ein +-Zeichen ist nur führend erlaubt.';
           const first = value.replace(/[\s(]/g, '')[0];
           if (first !== '0' && first !== '+')  return 'Bitte mit Vorwahl eingeben (beginnend mit 0 oder +).';
           const digits = value.replace(/\D/g, '').length;
-          if (digits < 6)                      return 'Die Nummer ist zu kurz.';
+          if (digits < 6)                      return 'Die Nummer ist zu kurz (mind. 6 Ziffern).';
           if (digits > 15)                     return 'Die Nummer ist zu lang (höchstens 15 Ziffern).';
           return '';
         },
@@ -1622,7 +1623,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         'sf-mail': value => {
           if (!value)              return '';
           if (value.length > 254)  return 'Bitte höchstens 254 Zeichen eingeben.';
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$/.test(value)) return 'Bitte eine gültige E-Mail-Adresse eingeben, z. B. name@beispiel.de.';
+          if (!/^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$/.test(value)) return 'Bitte geben Sie eine gültige E-Mail-Adresse ein, z. B. name@beispiel.de.';
           return '';
         },
 
@@ -1663,12 +1664,12 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       const checkedFields = Object.keys(RULES).map(id => document.getElementById(id));
 
       function validate(input) {
-        // normalize: „ë“ als ein Zeichen statt „e“ + Trema (kommt z. B. beim Einfügen vor)
+        // normalize: "ë" as one character instead of "e" + diaeresis (happens e.g. when pasting)
         const value = input.type === 'file' ? [...input.files] : input.value.trim().normalize('NFC');
         input.setCustomValidity(RULES[input.id](value));
       }
 
-      // Meldung unter dem Feld anzeigen bzw. entfernen
+      // Show or remove the message below the field
       function showError(input) {
         const errorEl = document.getElementById(input.id + '-error');
         errorEl.textContent = input.validity.valid ? '' : input.validationMessage;
@@ -1683,7 +1684,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       let firstInvalid = null;
       checkedFields.forEach(input => {
         validate(input);
-        // Dateien sofort prüfen, Textfelder erst nach dem Verlassen, danach live
+        // Check files immediately, text fields only after leaving them, then live
         input.addEventListener(input.type === 'file' ? 'change' : 'input', () => {
           validate(input);
           if (input.type === 'file') input.dataset.touched = 'true';
@@ -1691,16 +1692,18 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         });
         if (input.type !== 'file') {
           input.addEventListener('blur', () => {
-            if (input.value !== input.value.trim()) {
+            // Firefox: an email field with only spaces stays invalid although value is already '' –
+            // only setting value again fixes that
+            if (input.value !== input.value.trim() || (input.type === 'email' && input.value === '')) {
               input.value = input.value.trim();
               validate(input);
-              updateCounter();   // gekürzter Text löst kein input-Ereignis aus
+              updateCounter();   // trimmed text does not fire an input event
             }
             input.dataset.touched = 'true';
             showError(input);
           });
         }
-        // Beim Absenden: eigene Meldung statt Browser-Blase, erstes fehlerhaftes Feld fokussieren
+        // On submit: own message instead of the browser bubble, focus the first invalid field
         input.addEventListener('invalid', e => {
           e.preventDefault();
           input.dataset.touched = 'true';
@@ -1724,7 +1727,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         updateCounter();
       }
 
-      // Zurück zur leeren Formular-Ansicht
+      // Back to the empty form view
       function showForm() {
         formView.hidden = false;
         success.hidden = true;
@@ -1753,11 +1756,16 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         });
       }
 
-      // Wird erst ausgelöst, wenn alle Pflichtfelder ausgefüllt sind
+      // Pressing the mouse button on "Anfrage absenden" must not take the focus away from the field:
+      // otherwise the field shows its message right away, the button moves down and the click
+      // (mouse released at the old position) is lost. The message then comes from the submit itself.
+      form.querySelector('.schaden-form__submit').addEventListener('mousedown', e => e.preventDefault());
+
+      // Only fires when all fields are valid (required fields filled in, no invalid values)
       form.addEventListener('submit', e => {
         e.preventDefault();
-        // Hier später: FormData an Backend senden
-        // Vorname vor dem Leeren des Formulars übernehmen
+        // Later: send FormData to the backend
+        // Take the first name before the form is cleared
         successName.textContent = form.elements.vorname.value.trim().normalize('NFC');
         form.reset();
         resetValidation();
@@ -1768,7 +1776,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       });
     })();
 
-    // Leistungen: Tabs umschalten
+    // Services: switch tabs
     document.querySelectorAll('.services__nav').forEach(nav => {
       const container = nav.parentElement;
       nav.querySelectorAll('.services__tab').forEach(tab => {

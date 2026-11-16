@@ -3,6 +3,8 @@ import { expectedResult } from './helpers/addExpectedResult';
 import { checkExternalLink } from './helpers/checkExternalLink';
 import { scrollToY, scrollToSection, scrollToBottom } from './helpers/scroll';
 
+// Doku-Titel: Tests der CTA-Buttons
+
 // Floating CTA buttons at the bottom right (desktop) or bottom center (mobile):
 // "WhatsApp" and "Schaden checken"
 
@@ -36,13 +38,18 @@ async function distanceToViewportBottom(page: Page, element: Locator) {
 
 // ─── Tests ──────────────────────────────────────────────────────
 
+// Each layout is tested at its narrowest width:
+// - Smartphone (up to 820 px): the buttons are centered – at 320 px only 6 px are left on each side,
+//   so a slightly longer button text would already push them out of the picture
+// - Desktop (from 821 px): bottom right; the footer has nearly the same height at every desktop width
+//   (accordion up to 1120 px, table above)
 const viewports = [
-    { name: 'Desktop', width: 1280, height: 800 },
-    { name: 'Smartphone', width: 390, height: 844 },
+    { name: 'Desktop', width: 821, height: 800 },
+    { name: 'Smartphone', width: 320, height: 568 },
 ];
 
 for (const viewport of viewports) {
-    test.describe(`CTA-Buttons (${viewport.name})`, () => {
+    test.describe(`CTA-Buttons - ${viewport.name} (${viewport.width} px)`, () => {
         test.use({ viewport: { width: viewport.width, height: viewport.height } });
 
         let whatsappButton: Locator;
@@ -130,82 +137,21 @@ for (const viewport of viewports) {
             await checkExternalLink(page.locator('.cta-float'), { name: 'WhatsApp', url: WHATSAPP_URL });
         });
 
-        // 4) Overlay: open, close and scroll lock
-        test.describe('Schaden-checken-Overlay', () => {
+        // 4) "Schaden checken" opens the overlay with the form.
+        // Closing the overlay and the scroll lock are tested in damage-form.spec.ts – they work the same at every width.
+        test('Schaden-checken-Button öffnet das Overlay', expectedResult(
+            'Overlay ist geöffnet, Überschrift „Schaden checken“ sichtbar'
+        ), async ({ page }) => {
             // Note: the overlay is always in the HTML and only transparent (opacity 0).
-            // Playwright still counts it as "visible" – so check the class is-open.
-            const overlay = (page: Page) => page.getByRole('dialog', { name: 'Schaden einreichen' });
-            // the X at the top right of the overlay
-            const closeButton = (page: Page) => overlay(page).getByRole('button', { name: 'Schließen' });
-            const expectOverlayOpen = async (page: Page) => {
-                await expect(overlay(page)).toHaveClass(/is-open/);
-                await expect(overlay(page)).toHaveCSS('opacity', '1');
-                await expect(overlay(page).getByRole('heading', { name: 'Schaden checken' })).toBeInViewport();
-            };
-            const expectOverlayClosed = async (page: Page) => {
-                await expect(overlay(page)).not.toHaveClass(/is-open/);
-                await expect(overlay(page)).toHaveCSS('opacity', '0');
-            };
+            // Playwright still counts it as "visible" – so check the class is-open and the opacity.
+            const overlay = page.getByRole('dialog', { name: 'Schaden einreichen' });
+            await expect(overlay, 'Overlay ist vor dem Klick geschlossen').not.toHaveClass(/is-open/);
+            await expect(overlay, 'Overlay ist vor dem Klick unsichtbar').toHaveCSS('opacity', '0');
 
-            test('Button öffnet das Overlay', expectedResult(
-                'Overlay ist geöffnet, Überschrift „Schaden checken“ sichtbar'
-            ), async ({ page }) => {
-                await expectOverlayClosed(page);
-                await damageCheckButton.click();
-                await expectOverlayOpen(page);
-            });
-
-            test('Overlay schließt mit dem X', expectedResult(
-                'Overlay ist geschlossen'
-            ), async ({ page }) => {
-                await damageCheckButton.click();
-                await expectOverlayOpen(page);
-                await closeButton(page).click();
-                await expectOverlayClosed(page);
-            });
-
-            test('Overlay schließt mit der Escape-Taste', expectedResult(
-                'Overlay ist geschlossen'
-            ), async ({ page }) => {
-                await damageCheckButton.click();
-                await expectOverlayOpen(page);
-                await page.keyboard.press('Escape');
-                await expectOverlayClosed(page);
-            });
-
-            test('Overlay schließt bei Klick außerhalb des Formulars', expectedResult(
-                'Overlay ist geschlossen'
-            ), async ({ page }) => {
-                await damageCheckButton.click();
-                await expectOverlayOpen(page);
-                // top left corner of the overlay: the dark area around the form
-                await overlay(page).click({ position: { x: 5, y: 5 } });
-                await expectOverlayClosed(page);
-            });
-
-            test('Klick in das Formular lässt das Overlay offen', expectedResult(
-                'Overlay bleibt geöffnet'
-            ), async ({ page }) => {
-                await damageCheckButton.click();
-                await expectOverlayOpen(page);
-                await overlay(page).getByRole('heading', { name: 'Schaden checken' }).click();
-                await expectOverlayOpen(page);
-            });
-
-            test('Seite ist bei offenem Overlay nicht scrollbar', expectedResult(
-                'Scrollen der Seite ist gesperrt, solange das Overlay offen ist; Scrollen erst nach dem Schließen wieder möglich'
-            ), async ({ page }) => {
-                const body = page.locator('body');
-                await expect(body, 'Seite ist schon vor dem Öffnen gesperrt').not.toHaveCSS('overflow', 'hidden');
-
-                await damageCheckButton.click();
-                await expectOverlayOpen(page);
-                await expect(body, 'Seite ist bei offenem Overlay nicht gesperrt').toHaveCSS('overflow', 'hidden');
-
-                await closeButton(page).click();
-                await expectOverlayClosed(page);
-                await expect(body, 'Seite bleibt nach dem Schließen gesperrt').not.toHaveCSS('overflow', 'hidden');
-            });
+            await damageCheckButton.click();
+            await expect(overlay, 'Overlay ist geöffnet').toHaveClass(/is-open/);
+            await expect(overlay, 'Overlay ist sichtbar').toHaveCSS('opacity', '1');
+            await expect(overlay.getByRole('heading', { name: 'Schaden checken' }), 'Überschrift im sichtbaren Bereich').toBeInViewport();
         });
     });
 }

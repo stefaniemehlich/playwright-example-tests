@@ -1,6 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
 import { expectedResult } from './helpers/addExpectedResult';
 
+// Doku-Titel: Tests der Bilder
+
 // ─── Helper functions ───────────────────────────────────────────
 
 // Checks whether the server delivers every URL as an image.
@@ -70,46 +72,46 @@ test('Bilder: Favicon kann geladen werden', expectedResult(
 
 // ─── loading="lazy" ───────────────
 
+// Which images are visible depends on the layout, not on the exact width –
+// so one width per layout, the narrowest as in the other test files
 const viewports = [
-    { name: 'Desktop', width: 1280, height: 800 },
-    { name: 'Smartphone', width: 390, height: 844 },
+    { name: 'Desktop', width: 821, height: 800 },
+    { name: 'Smartphone', width: 320, height: 568 },
 ];
 
 for (const viewport of viewports) {
-    test.describe(`Bilder bei ${viewport.width} px (${viewport.name})`, () => {
-        test.use({ viewport: { width: viewport.width, height: viewport.height } });
 
-        test('unterhalb des Heroes mit loading="lazy", darüber ohne', expectedResult(
-            'Sichtbare Bilder unterhalb des Heroes haben loading="lazy", Bilder im oder über dem Hero nicht'
-        ), async ({ page }) => {
-            await page.goto('/');
+    test(`Bilder - ${viewport.name} (${viewport.width} px): loading="lazy"`, expectedResult(
+        'Sichtbare Bilder unterhalb des Heroes haben loading="lazy", Bilder im oder über dem Hero nicht'
+    ), async ({ page }) => {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await page.goto('/');
 
-            // Compares the top edge of every image with the bottom edge of the hero,
-            // both measured from the top of the page (position in the window + scrolled distance)
-            const errors = await page.evaluate(() => {
-                const hero = document.querySelector('.hero');
-                if (!hero) return ['Hero-Bereich nicht gefunden (Klasse .hero)'];
-                const heroBottom = hero.getBoundingClientRect().bottom + window.scrollY;
+        // Compares the top edge of every image with the bottom edge of the hero,
+        // both measured from the top of the page (position in the window + scrolled distance)
+        const errors = await page.evaluate(() => {
+            const hero = document.querySelector('.hero');
+            if (!hero) return ['Hero-Bereich nicht gefunden (Klasse .hero)'];
+            const heroBottom = hero.getBoundingClientRect().bottom + window.scrollY;
 
-                const messages: string[] = [];
-                for (const image of Array.from(document.querySelectorAll('img'))) {
-                    // skip images hidden in this layout (e.g. mobile navigation on desktop)
-                    if (!image.checkVisibility()) continue;
+            const messages: string[] = [];
+            for (const image of Array.from(document.querySelectorAll('img'))) {
+                // skip images hidden in this layout (e.g. mobile navigation on desktop)
+                if (!image.checkVisibility()) continue;
 
-                    const imageTop = Math.round(image.getBoundingClientRect().top + window.scrollY);
-                    const isLazy = image.getAttribute('loading') === 'lazy';
-                    const imageUrl = image.getAttribute('src');
+                const imageTop = Math.round(image.getBoundingClientRect().top + window.scrollY);
+                const isLazy = image.getAttribute('loading') === 'lazy';
+                const imageUrl = image.getAttribute('src');
 
-                    if (imageTop >= heroBottom && !isLazy)
-                        messages.push(`${imageUrl} (bei ${imageTop} px): liegt unterhalb des Heroes, aber ohne loading="lazy"`);
-                    if (imageTop < heroBottom && isLazy)
-                        messages.push(`${imageUrl} (bei ${imageTop} px): liegt im oder über dem Hero, hat aber loading="lazy" – lädt dadurch verzögert`);
-                }
-                // slide copies produce the same messages – remove duplicates
-                return [...new Set(messages)];
-            });
-
-            expect(errors, 'loading="lazy" falsch gesetzt').toEqual([]);
+                if (imageTop >= heroBottom && !isLazy)
+                    messages.push(`${imageUrl} (bei ${imageTop} px): liegt unterhalb des Heroes, aber ohne loading="lazy"`);
+                if (imageTop < heroBottom && isLazy)
+                    messages.push(`${imageUrl} (bei ${imageTop} px): liegt im oder über dem Hero, hat aber loading="lazy" – lädt dadurch verzögert`);
+            }
+            // slide copies produce the same messages – remove duplicates
+            return [...new Set(messages)];
         });
+
+        expect(errors, 'loading="lazy" falsch gesetzt').toEqual([]);
     });
 }

@@ -6,6 +6,8 @@ import {
     checkArrows, checkEndlessLoop, checkAutoplay,
 } from './helpers/slider';
 
+// Doku-Titel: Tests der Bewertungen
+
 const MIN_TEXT_LENGTH = 50;
 
 // ─── Helper functions for the reviews only ──────────────────────
@@ -166,42 +168,39 @@ test('Bewertungen: Wechsel automatisch im eingestellten Takt', expectedResult(
 //
 // more widths need to be added if the font size ever scales with the viewport (e.g. clamp)
 const viewports = [
-    { name: 'Smartphone klein',     width: 320,  height: 640 },
-    { name: 'erste Desktop-Breite', width: 821,  height: 900 },
+    { name: 'Smartphone', width: 320, height: 640 },
+    { name: 'Desktop', width: 821, height: 900 },
 ];
 
 for (const viewport of viewports) {
-    test.describe(`Bewertungen bei ${viewport.width} px (${viewport.name})`, () => {
-        test.use({ viewport: { width: viewport.width, height: viewport.height } });
+    test(`Bewertungen: Inhalt wird vollständig angezeigt - ${viewport.name} (${viewport.width} px)`, expectedResult(
+        'Name, Sterne und Text jeder Bewertung liegen vollständig innerhalb der Karte'
+    ), async ({ page }) => {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await page.goto('/');
+        // only measure once the real font has loaded (font-display: swap)
+        await page.evaluate(() => document.fonts.ready);
 
-        test('kein Inhalt einer Karte wird abgeschnitten', expectedResult(
-            'Name, Sterne und Text jeder Bewertung liegen vollständig innerhalb der Karte'
-        ), async ({ page }) => {
-            await page.goto('/');
-            // only measure once the real font has loaded (font-display: swap)
-            await page.evaluate(() => document.fonts.ready);
+        const errors = await page.locator('.reviews__slide').evaluateAll(cards => {
+            const messages: string[] = [];
+            for (const card of cards) {
+                const cardRect = card.getBoundingClientRect();
+                const name = card.querySelector('.reviews__name')?.textContent?.trim() || '(ohne Name)';
 
-            const errors = await page.locator('.reviews__slide').evaluateAll(cards => {
-                const messages: string[] = [];
-                for (const card of cards) {
-                    const cardRect = card.getBoundingClientRect();
-                    const name = card.querySelector('.reviews__name')?.textContent?.trim() || '(ohne Name)';
-
-                    // every element of the card (name, stars, text) must lie completely inside
-                    // (1 px is allowed for rounding)
-                    for (const part of Array.from(card.children)) {
-                        const partRect = part.getBoundingClientRect();
-                        const overflowTop    = Math.round(cardRect.top - partRect.top);
-                        const overflowBottom = Math.round(partRect.bottom - cardRect.bottom);
-                        if (overflowTop > 1)    messages.push(`${name}: „${part.className}“ oben ${overflowTop} px abgeschnitten`);
-                        if (overflowBottom > 1) messages.push(`${name}: „${part.className}“ unten ${overflowBottom} px abgeschnitten`);
-                    }
+                // every element of the card (name, stars, text) must lie completely inside
+                // (1 px is allowed for rounding)
+                for (const part of Array.from(card.children)) {
+                    const partRect = part.getBoundingClientRect();
+                    const overflowTop = Math.round(cardRect.top - partRect.top);
+                    const overflowBottom = Math.round(partRect.bottom - cardRect.bottom);
+                    if (overflowTop > 1) messages.push(`${name}: „${part.className}“ oben ${overflowTop} px abgeschnitten`);
+                    if (overflowBottom > 1) messages.push(`${name}: „${part.className}“ unten ${overflowBottom} px abgeschnitten`);
                 }
-                // slide copies produce the same messages – remove duplicates
-                return [...new Set(messages)];
-            });
-
-            expect(errors, 'Inhalt von Bewertungskarten wird abgeschnitten').toEqual([]);
+            }
+            // slide copies produce the same messages – remove duplicates
+            return [...new Set(messages)];
         });
+
+        expect(errors, 'Inhalt von Bewertungskarten wird abgeschnitten').toEqual([]);
     });
 }
