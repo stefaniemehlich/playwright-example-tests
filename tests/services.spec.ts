@@ -33,7 +33,7 @@ async function readServices(page: Page): Promise<Service[]> {
     }));
 }
 
-// Groups of services that share the same value, e.g. ['„Hagelschaden“, „Hagelschaden II“'].
+// Groups of services that share the same value, e.g. ['„Hagelschaden“, „Smart Repair“'].
 // Services without a value are skipped – missing content is reported by the test under "Tab switching".
 function findServicesWithSameValue(services: Service[], property: 'text' | 'imageUrl') {
     const namesByValue = new Map<string, string[]>();

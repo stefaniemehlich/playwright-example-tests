@@ -267,7 +267,7 @@
       max-width: var(--max-width); width: 100%; text-align: center;
     }
     .statement__title strong { font-weight: 600; }
-    .statement__title italic_green { font-style: italic; color: var(--dellen_green); }
+    .statement__accent { font-style: italic; color: var(--dellen_green); }
 
     /* Background image in the FAQ tab answers */
     .services__bg {
@@ -843,7 +843,7 @@
           <span class="eyebrow eyebrow--center">Warum Dellen Company</span>
           <h2 class="statement__title">
             Ihr Originallack ist <strong>unersetzlich.</strong><br>
-            Konventionelle Reparaturen greifen in<br>Material und Oberfläche ein. Wir sind<br>die <italic_green>schonende Alternative.</italic_green>
+            Konventionelle Reparaturen greifen in<br>Material und Oberfläche ein. Wir sind<br>die <em class="statement__accent">schonende Alternative.</em>
           </h2>
         </div>
       </div>
@@ -1224,7 +1224,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
             <input type="file" id="sf-upload" name="dateien" accept="image/*,video/*" multiple aria-describedby="sf-upload-error">
             <div class="schaden-form__upload-icon">📎</div>
             <div class="schaden-form__upload-text"><strong>Dateien auswählen</strong> oder hier ablegen</div>
-            <div class="schaden-form__upload-text">bis zu 10 Bilder &amp; Videos, max. 20&nbsp;MB pro Datei</div>
+            <div class="schaden-form__upload-text">bis zu 10 Bilder &amp; Videos, max.&nbsp;20&nbsp;MB pro Datei und 50&nbsp;MB insgesamt</div>
             <div class="schaden-form__upload-names" id="sfFileNames"></div>
           </div>
           <p class="schaden-form__error" id="sf-upload-error" aria-live="polite"></p>
@@ -1623,7 +1623,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         'sf-mail': value => {
           if (!value)              return '';
           if (value.length > 254)  return 'Bitte höchstens 254 Zeichen eingeben.';
-          if (!/^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$/.test(value)) return 'Bitte geben Sie eine gültige E-Mail-Adresse ein, z. B. name@beispiel.de.';
+          if (!/^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/.test(value)) return 'Bitte geben Sie eine gültige E-Mail-Adresse ein, z. B. name@beispiel.de.';
           return '';
         },
 
@@ -1681,14 +1681,16 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         counter.textContent = form.elements.mitteilung.value.length + ' / 1000';
       }
 
-      // Remove the spaces at both ends of a text field
-      function removeOuterSpaces(input) {
+      // Tidy up a text field: remove the spaces at both ends and write "ë" as one character
+      // instead of "e" + diaeresis (happens e.g. when pasting), so the value is sent the way it is checked
+      function tidyUp(input) {
+        const tidied = input.value.trim().normalize('NFC');
         // Firefox: an email field with only spaces stays invalid although value is already '' –
         // only setting value again fixes that
-        if (input.value !== input.value.trim() || (input.type === 'email' && input.value === '')) {
-          input.value = input.value.trim();
+        if (input.value !== tidied || (input.type === 'email' && input.value === '')) {
+          input.value = tidied;
           validate(input);
-          updateCounter();   // trimmed text does not fire an input event
+          updateCounter();   // setting value does not fire an input event
         }
       }
 
@@ -1703,7 +1705,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         });
         if (input.type !== 'file') {
           input.addEventListener('blur', () => {
-            removeOuterSpaces(input);
+            tidyUp(input);
             input.dataset.touched = 'true';
             showError(input);
           });
@@ -1768,10 +1770,10 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
       submitBtn.addEventListener('mousedown', e => e.preventDefault());
 
       // A submit straight from a field (click as above, or Enter) skips the blur of that field –
-      // so remove the outer spaces of all text fields here. Every way of submitting triggers this click,
+      // so tidy up all text fields here. Every way of submitting triggers this click,
       // and it runs before the browser checks the form.
       submitBtn.addEventListener('click', () => {
-        checkedFields.filter(input => input.type !== 'file').forEach(removeOuterSpaces);
+        checkedFields.filter(input => input.type !== 'file').forEach(tidyUp);
       });
 
       // Only fires when all fields are valid (required fields filled in, no invalid values)
