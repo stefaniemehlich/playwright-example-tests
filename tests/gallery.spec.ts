@@ -43,9 +43,30 @@ const gallerySlider: Slider = {
     getIndicatorPosition: getProgressPosition,
 };
 
-// ─── Tests ──────────────────────────────────────────────────────
+// ─── Content ────────────────────────────────────────────────────
 
 // tests/images.spec.ts checks image loading for the whole page, tests/seo.spec.ts the alt texts
+
+test.describe('Galerie: Inhalt', () => {
+    // without JavaScript the DOM only contains what is in the HTML file – so no slide copies
+    test.use({ javaScriptEnabled: false });
+
+    // The slider tests recognize the active image by its address, so the images must also be unique for them
+    test('jedes Bild kommt nur einmal vor', expectedResult(
+        'Kein Bild (src) wird bei mehr als einem Slide verwendet'
+    ), async ({ page }) => {
+        await page.goto('/');
+
+        const imageUrls = await page.locator('.slider__image')
+            .evaluateAll(images => images.map(image => image.getAttribute('src') ?? ''));
+        expect(imageUrls.length, 'Keine Galerie-Bilder gefunden (Klasse .slider__image)').toBeGreaterThan(0);
+
+        const duplicates = [...new Set(imageUrls.filter((imageUrl, i) => imageUrls.indexOf(imageUrl) !== i))];
+        expect(duplicates, 'Diese Bilder werden bei mehreren Slides verwendet').toEqual([]);
+    });
+});
+
+// ─── Slider ─────────────────────────────────────────────────────
 
 test('Galerie: Pfeile vor/zurück wechseln das Bild', expectedResult(
     '„Weiter“ zeigt ein anderes Bild, „zurück“ wieder das vorherige'
@@ -54,7 +75,7 @@ test('Galerie: Pfeile vor/zurück wechseln das Bild', expectedResult(
     await checkArrows(page, gallerySlider);
 });
 
-test('Galerie: Endlos-Schleife in beide Richtungen', expectedResult(
+test('Galerie: Endlos-Schleife in beide Richtungen mit Positionsanzeige', expectedResult(
     'Jedes Bild erscheint genau einmal, danach wieder das erste; „zurück“ vom ersten Bild zeigt das letzte; der Fortschrittsbalken ist dabei immer passend zur Position des Bildes gefüllt'
 ), async ({ page }) => {
     await openWithPausedClock(page);

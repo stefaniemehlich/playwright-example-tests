@@ -10,13 +10,15 @@ This is my first example project with Playwright: automated end-to-end tests for
 
 ## At a glance
 
-- 262 test cases in 12 test files, each run in Chromium, Firefox, and WebKit
+- 298 test cases in 12 test files, each run in Chromium, Firefox, and WebKit (894 test runs)
 - TypeScript with type checking
 - Shared helper functions in `tests/helpers/`
-- ESLint, including a rule that catches missing `await`
-- [GitHub Actions](https://github.com/stefaniemehlich/Example_Project/actions): type checking, linting, and all tests on every push; each run uploads the full HTML test report as a downloadable artifact (kept for 30 days)
-- Every test case has a recorded expected result; this automatically generates
-  the overview in `dokuTestcases.md`
+- ESLint with the recommended rules for JavaScript, TypeScript, and Playwright, plus a type-aware rule that catches missing `await`
+- [GitHub Actions](https://github.com/stefaniemehlich/Example_Project/actions): type checking, linting, and all tests on every push to `main` and on every pull request; on CI, failed tests are retried up to two times, and each run uploads the full HTML test report as a downloadable artifact (kept for 30 days)
+- Every test case has a documented expected result; from these, a script generates
+  the overview in [`dokuTestcases.md`](dokuTestcases.md)
+- Developing the tests revealed several weaknesses on the page, e.g. contradictory
+  details, duplicate content, and edge cases in the form, which were then fixed
 
 **Note:** Test titles, expected results, and `dokuTestcases.md` are in German because the example website was designed for a German business. Identifiers and comments in the code are in English.
 
@@ -24,31 +26,68 @@ This is my first example project with Playwright: automated end-to-end tests for
 
 | Area | Test file | Content |
 |---|---|---|
-| "Check damage" form | `damage-form.spec.ts` | Required fields, validation of all fields, upload, submit flow (success/error state), submitting with the keyboard, closing the overlay |
-| Floating buttons | `cta-float.spec.ts` | Visibility, position while scrolling, opening the overlay |
-| Gallery and reviews | `gallery.spec.ts`, `reviews.spec.ts` | Arrows, infinite loop, automatic rotation, position indicator |
-| FAQ | `faq.spec.ts` | Expand/collapse, content |
-| Navigation and footer | `navbar*.spec.ts`, `footer.spec.ts` | Internal and external links |
-| Page in general | `homepage.spec.ts`, `images.spec.ts`, `seo.spec.ts` | Loads without errors, images, SEO basics |
+| "Check damage" form | `damage-form.spec.ts` | Validation of every field (including when the messages appear and change), character counter, file names, and the green border of the active field, required fields and submitting, the values that are actually submitted, correcting, adding, and overwriting values, thank-you screen, closing and reopening the overlay |
+| Floating buttons | `cta-float.spec.ts` | Visibility, position while scrolling, buttons do not cover the footer, WhatsApp link, "Check damage" button opens the form overlay |
+| Gallery and reviews | `gallery.spec.ts`, `reviews.spec.ts` | Function of the arrows, infinite loop (with the progress bar or dots always showing the current position), automatic rotation; for the reviews also their content, the "… months ago" text, and that they are fully visible at different screen widths |
+| Services | `services.spec.ts` | First service active on load, switching between services; each service has its own text (at least 50 characters) and background image |
+| FAQ | `faq.spec.ts` | Expand/collapse on desktop and smartphone, every question has its own answer (at least 50 characters) and, on desktop, its own image, keyboard navigation, no cut-off answers |
+| Navigation and footer | `navbar*.spec.ts`, `footer.spec.ts` | Internal and external links, logo scrolls back to the top, social links open in a new tab |
+| Page in general | `homepage.spec.ts`, `images.spec.ts`, `seo.spec.ts` | Loads without errors, no horizontal scrolling, fade-in while scrolling, all images load (including lazy loading), SEO basics and structured data |
 
 ## Main focus: the damage form
 
-The 190 tests in `damage-form.spec.ts` best show how I design tests:
+The 222 tests in `damage-form.spec.ts` best show how I design tests:
 
-- **Table-driven test data:** each row is a test case with an input and
+- **Table-driven test data:** each row is a test case with an input and an
   expected message. A new case is a new row.
 - **Boundary values:** e.g. 50 and 51 characters for the name field, 15 and 16
-  digits for the phone number, 20 MB and 20 MB + 1 byte for the upload.
-- **Positive and negative tests** are separated with tags and can be run
-  individually. Each form field has its own tag as well.
+  digits for the phone number (with and without separators, since only digits
+  count), 63 and 64 characters for one part of an email domain, 20 MB and
+  20 MB + 1 byte for the upload.
+- **Positive and negative tests:** the validation tests are tagged as one or
+  the other and can be run separately. Each form field has its own tag as well.
 - **Flows:** combinations of required fields, adding missing information
   afterwards, correcting invalid values, several errors at once, submitting
-  with the keyboard, reopening the form before and after submission.
+  with the keyboard or straight from a field, reopening the form before
+  submission (values and messages are kept) and after it (everything is reset).
+- **What is actually sent:** some tests capture the values of all fields at the
+  moment of submitting, e.g. to check that leading and trailing spaces are trimmed and that the
+  values entered last are the ones sent.
 
-## Deliberately out of scope
+## Classification (ISTQB)
+
+Terms as used in the ISTQB Certified Tester Foundation Level syllabus v4.0.1.
+
+- **Static testing:** static analysis with ESLint and the TypeScript type check,
+  both run in CI before the tests.
+- **Dynamic testing:** all Playwright tests.
+- **Test level:** system testing. The whole page runs in a real browser and
+  nothing is simulated; without a backend, the page is the entire system.
+  System integration testing is out of scope: external links are intercepted
+  and answered with a placeholder page.
+- **Test types:** mainly functional and black-box testing (a few tests read values
+  such as the auto-play interval from the source code). Some non-functional
+  checks: no horizontal scrolling, image loading, keyboard navigation, and a
+  visible focus border.
+- **Regression testing:** the full suite runs in CI on every push and pull request.
+
+| Test technique | Example in this project |
+|---|---|
+| Equivalence partitioning | one value per partition in the validation tables, e.g. umlauts, Cyrillic script, or an apostrophe in a name |
+| Boundary value analysis | 50 and 51 characters for names, 15 and 16 digits for the phone number, 20 MB and 20 MB + 1 byte for the upload |
+| Decision table testing | combinations of filled-in and missing required fields when submitting |
+| State transition testing | overlay (closed → form → thank-you screen → closed → reopened), FAQ, sliders |
+| Error guessing | "ë" pasted as two characters, Firefox treating an email field with only spaces as invalid |
+
+Test cases are designed from the specified behavior. The source code was used
+to find gaps (e.g. that only digits count for the phone number length), but code
+coverage is not measured, so the white-box test techniques (statement and branch
+testing) are not applied in the strict sense.
+
+## Not (yet) covered
 
 - **Mobile view:** currently only checked where behavior differs from desktop
-  (FAQ, buttons, images). Full mobile coverage is missing.
+  (FAQ, floating buttons, images, reviews). Full mobile coverage is missing.
 - **Accessibility:** no automated check yet. The next step would be
   `@axe-core/playwright` for the homepage and the form.
 - **Backend:** the page has none. There are therefore no API tests, no login,
@@ -56,20 +95,25 @@ The 190 tests in `damage-form.spec.ts` best show how I design tests:
 
 ## Running the tests
 
-Prerequisite: Node.js
+Prerequisite: Node.js (LTS)
 
     npm ci
     npx playwright install
     npm test
 
+Playwright automatically starts a local web server on port 8080 (or reuses
+one already running there).
+
 | Command | Purpose |
 |---|---|
 | `npm test` | all tests in all three browsers |
+| `npx playwright test --project=chromium` | all tests in one browser only |
 | `npx playwright test --ui` | view and run tests individually |
+| `npx playwright show-report` | open the HTML report of the last run |
 | `npx playwright test --grep @negativtest` | only the negative tests |
 | `npx playwright test --grep @validierung-plz` | all tests of one form field (here: postal code) |
 | `npm run lint` | run ESLint |
-| `npm run typecheck` | type checking |
+| `npm run typecheck` | run the TypeScript type check |
 | `npm run writeDokuTestcases` | regenerate `dokuTestcases.md` |
 
 ## License

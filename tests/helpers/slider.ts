@@ -46,7 +46,7 @@ export async function clickArrow(page: Page, name: string) {
 }
 
 // Read the auto-play interval from the source code. The pattern must occur exactly once,
-// the milliseconds are in the first group of the pattern.
+// the milliseconds are in the first capture group.
 // patternDescription: readable form of the pattern for the error message
 export async function readIntervalFromSource(page: Page, pattern: RegExp, patternDescription: string) {
     const source = await (await page.request.get('/')).text();
@@ -103,8 +103,8 @@ export async function checkEndlessLoop(page: Page, slider: Slider, slideCount: n
     await expectIndicatorPosition(page, slider, slideCount, slideCount);
 }
 
-// Shortly before the interval ends still the same slide, shortly after a new one.
-// Call right after openWithPausedClock (100 ms have already passed there).
+// Shortly before the interval ends, the slide is still the same; shortly after, a new one is shown.
+// Call right after openWithPausedClock (it has already fast-forwarded 100 ms).
 export async function checkAutoplay(page: Page, slider: Slider, interval: number) {
     const startSlide = await slider.getActiveId(page);
 

@@ -40,7 +40,7 @@ async function distanceToViewportBottom(page: Page, element: Locator) {
 
 // Each layout is tested at its narrowest width:
 // - Smartphone (up to 820 px): the buttons are centered – at 320 px only 6 px are left on each side,
-//   so a slightly longer button text would already push them out of the picture
+//   so a slightly longer button text would already push them off the screen
 // - Desktop (from 821 px): bottom right; the footer has nearly the same height at every desktop width
 //   (accordion up to 1120 px, table above)
 const viewports = [
@@ -143,7 +143,7 @@ for (const viewport of viewports) {
             'Overlay ist geöffnet, Überschrift „Schaden checken“ sichtbar'
         ), async ({ page }) => {
             // Note: the overlay is always in the HTML and only transparent (opacity 0).
-            // Playwright still counts it as "visible" – so check the class is-open and the opacity.
+            // Playwright still counts it as "visible" – so check the is-open class and the opacity.
             const overlay = page.getByRole('dialog', { name: 'Schaden einreichen' });
             await expect(overlay, 'Overlay ist vor dem Klick geschlossen').not.toHaveClass(/is-open/);
             await expect(overlay, 'Overlay ist vor dem Klick unsichtbar').toHaveCSS('opacity', '0');

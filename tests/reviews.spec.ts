@@ -51,6 +51,8 @@ const timeTexts = [
     { monthsLater: 1, text: 'vor 1 Monat' },
     { monthsLater: 11, text: 'vor 11 Monaten' },
     { monthsLater: 12, text: 'vor 1 Jahr' },
+    // the years are rounded down: 23 months is still 1 year, not 2
+    { monthsLater: 23, text: 'vor 1 Jahr' },
     { monthsLater: 24, text: 'vor 2 Jahren' },
 ];
 
@@ -145,7 +147,7 @@ test('Bewertungen: Pfeile vor/zurück wechseln die Bewertung', expectedResult(
     await checkArrows(page, reviewsSlider);
 });
 
-test('Bewertungen: Endlos-Schleife in beide Richtungen', expectedResult(
+test('Bewertungen: Endlos-Schleife in beide Richtungen mit Positionsanzeige', expectedResult(
     'Jede Bewertung erscheint genau einmal, danach wieder die erste; „zurück“ von der ersten Bewertung zeigt die letzte; dabei ist immer genau der Punkt an der Position der Bewertung aktiv'
 ), async ({ page }) => {
     await openWithPausedClock(page);
@@ -187,7 +189,7 @@ for (const viewport of viewports) {
                 const cardRect = card.getBoundingClientRect();
                 const name = card.querySelector('.reviews__name')?.textContent?.trim() || '(ohne Name)';
 
-                // every element of the card (name, stars, text) must lie completely inside
+                // every element of the card (name, stars, text) must be completely inside the card
                 // (1 px is allowed for rounding)
                 for (const part of Array.from(card.children)) {
                     const partRect = part.getBoundingClientRect();

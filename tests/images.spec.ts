@@ -10,7 +10,7 @@ import { expectedResult } from './helpers/addExpectedResult';
 async function findUnloadableImages(page: Page, urls: string[]) {
     const errors: string[] = [];
     for (const url of new Set(urls)) {
-        // an empty address would request the page itself and produce a confusing message
+        // an empty URL would request the page itself and produce a confusing message
         if (url.trim() === '') {
             errors.push('leere Bild-Adresse (src oder data-img fehlt)');
             continue;
@@ -86,8 +86,8 @@ for (const viewport of viewports) {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
         await page.goto('/');
 
-        // Compares the top edge of every image with the bottom edge of the hero,
-        // both measured from the top of the page (position in the window + scrolled distance)
+        // Compares the top edge of every image with the bottom edge of the hero section,
+        // both measured from the top of the page (position in the viewport + scrolled distance)
         const errors = await page.evaluate(() => {
             const hero = document.querySelector('.hero');
             if (!hero) return ['Hero-Bereich nicht gefunden (Klasse .hero)'];

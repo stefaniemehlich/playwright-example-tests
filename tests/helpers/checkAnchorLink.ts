@@ -19,6 +19,6 @@ export async function checkAnchorLink(area: Locator, link: AnchorLink) {
     await linkElement.click();
     // URL ends with the anchor after the click
     await expect(page).toHaveURL(new RegExp(`${link.href}$`));
-    // section is in the visible part of the page (the anchor is also the selector of its id)
+    // section is in view (the anchor doubles as the CSS selector for its id)
     await expect(page.locator(link.href)).toBeInViewport();
 }

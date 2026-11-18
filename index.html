@@ -1260,7 +1260,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
   </div>
 
   <script>
-    // Sustain Cards Dots (Mobile)
+    // Dots for the sustainability cards (mobile)
     const sustainCards = document.getElementById('sustainCards');
     const sustainDots = document.getElementById('sustainDots');
     if (sustainCards && sustainDots) {
@@ -1467,7 +1467,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
     document.getElementById('sliderNext').addEventListener('click', () => { next(); startAutoPlay(); });
     addSwipe(sliderTrack.parentElement, () => { next(); startAutoPlay(); }, () => { prev(); startAutoPlay(); });
 
-    // Reviews: calculate the time information
+    // Reviews: build the "vor X Monaten" text from the review date
     document.querySelectorAll('[data-review-date]').forEach(el => {
       const [year, month] = el.dataset.reviewDate.split('-').map(Number);
       const now = new Date();
@@ -1531,7 +1531,8 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         const footerTop     = footer.getBoundingClientRect().top;
         const overlap       = window.innerHeight - footerTop;
         const defaultBottom = mqMobile.matches ? 16 : 36;
-        // overlap 36 for the footer – variable pixel value, so it stays above before the footer is fully visible
+        // once the footer is more than 16 px in view, keep the buttons 48 px above its top edge;
+        // before that, use the normal distance from the bottom
         if (overlap > 16) {
           floatBtn.style.bottom = (overlap + 48) + 'px';
         } else {
@@ -1710,7 +1711,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
             showError(input);
           });
         }
-        // On submit: own message instead of the browser bubble, focus the first invalid field
+        // On submit: own message instead of the browser's tooltip, focus the first invalid field
         input.addEventListener('invalid', e => {
           e.preventDefault();
           input.dataset.touched = 'true';

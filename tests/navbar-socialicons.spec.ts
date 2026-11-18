@@ -19,7 +19,7 @@ for (const link of socialLinks) {
     test(`Navbar: Social-Icon ${link.name} öffnet in neuem Tab`, expectedResult(
         `Link führt auf ${link.url} (target="_blank", rel="noopener"); Klick öffnet ${link.name} in neuem Tab`
     ), async ({ page }) => {
-        // the header: on desktop the social icons sit there, the copies in the mobile bar are hidden
+        // the header: this is where the social icons are on desktop; the copies in the mobile bar are hidden
         await checkExternalLink(page.getByRole('banner'), link);
     });
 }

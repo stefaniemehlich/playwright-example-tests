@@ -20,7 +20,7 @@ export default defineConfig(
       'playwright/no-conditional-expect': 'off',
       'playwright/no-identical-title': 'off',
       'playwright/valid-test-tags': 'off',
-      // skipping is fine with a condition (e.g. browser-specific tests), still warn for unconditional skips
+      // conditional skips are fine (e.g. browser-specific tests), but still warn about unconditional ones
       'playwright/no-skipped-test': ['warn', { allowConditional: true }],
     },
   },

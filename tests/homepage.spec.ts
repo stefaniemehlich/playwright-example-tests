@@ -27,16 +27,16 @@ test('Startseite: lädt ohne JavaScript-Fehler und ohne fehlgeschlagene Anfragen
     page.on('console', message => {
         if (message.type() === 'error') errors.push(`Konsole: ${message.text()}`);
     });
-    // requests that got no answer at all (e.g. server not reachable)
+    // requests that got no response at all (e.g. server not reachable)
     page.on('requestfailed', request => errors.push(`Anfrage fehlgeschlagen: ${request.url()} (${request.failure()?.errorText})`));
-    // requests answered with an error status (e.g. 404 for a missing image)
+    // requests that returned an error status (e.g. 404 for a missing image)
     page.on('response', response => {
         if (response.status() >= 400) errors.push(`Status ${response.status()}: ${response.url()}`);
     });
 
     await page.goto('/');
     await scrollThroughPage(page);
-    // wait until the lazy images have finished loading
+    // wait until the lazy-loaded images have finished loading
     // eslint-disable-next-line playwright/no-networkidle -- static page without background requests; every request that has started should be awaited here
     await page.waitForLoadState('networkidle');
 
@@ -45,8 +45,11 @@ test('Startseite: lädt ohne JavaScript-Fehler und ohne fehlgeschlagene Anfragen
 
 // ─── No horizontal scrolling ────────────────────────────────────
 
-// desktop layout only (from 821 px) – smartphone widths are deliberately left out in this example project
-const widths = [821, 1280, 1920];
+// Desktop only (from 821 px) – smartphone widths are deliberately left out in this example project.
+// Each desktop layout is tested at its narrowest width, where overflow is most likely:
+// - 821 px: footer as accordion (up to 1120 px)
+// - 1121 px: footer as a table with five columns side by side
+const widths = [821, 1121];
 
 for (const width of widths) {
     test(`Startseite - Desktop (${width} px): kein horizontales Scrollen`, expectedResult(
@@ -76,7 +79,7 @@ test('Startseite: letzter Einblend-Bereich ist nach dem Laden noch ausgeblendet'
     const revealAreas = page.locator('.reveal');
     expect(await revealAreas.count(), 'Keine Einblend-Bereiche gefunden (Klasse .reveal)').toBeGreaterThan(0);
 
-    // the last area is far below the window, so it cannot have been in view yet
+    // the last area is far below the viewport, so it cannot have been in view yet
     const lastArea = revealAreas.last();
     await expect(lastArea, 'Bereich ist schon eingeblendet, obwohl er noch nicht im Fenster war').not.toHaveClass(/visible/);
     await expect(lastArea, 'Bereich ist nicht ausgeblendet').toHaveCSS('opacity', '0');

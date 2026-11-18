@@ -179,7 +179,7 @@ test('SEO: alle <img>-Bilder haben einen Alt-Text', expectedResult(
             const imageUrl = image.getAttribute('src');
             const alt = image.getAttribute('alt');
             // alt="" is only correct for purely decorative images –
-            // those must mark it explicitly with aria-hidden="true"
+            // and those must also be explicitly marked with aria-hidden="true"
             const isDecorative = image.getAttribute('aria-hidden') === 'true';
             if (alt === null) messages.push(`${imageUrl}: kein alt-Attribut`);
             else if (alt.trim() === '' && !isDecorative) messages.push(`${imageUrl}: leerer alt-Text, aber nicht als dekorativ markiert (aria-hidden="true")`);

@@ -4,6 +4,9 @@ import { normalizeWhitespace } from './helpers/normalizeWhitespace';
 
 // Doku-Titel: Tests der Leistungen
 
+// same minimum as for the FAQ answers: catches empty or placeholder texts
+const MIN_TEXT_LENGTH = 50;
+
 // ─── Helper functions ───────────────────────────────────────────
 
 // One service: a tab with its panel
@@ -56,6 +59,18 @@ test.beforeEach(async ({ page }) => {
 
 // ─── Tab switching ──────────────────────────────────────────────
 
+test('Leistungen: beim Laden ist die erste Leistung aktiv', expectedResult(
+    'Nach dem Laden ist nur der erste Tab aktiv und nur sein Panel sichtbar'
+), async ({ page }) => {
+    const tabs = page.locator('.services__tab');
+    await expect(tabs.first(), 'Erster Tab ist beim Laden nicht aktiv').toHaveClass(/is-active/);
+    await expect(page.locator('.services__tab.is-active'), 'Nicht genau ein aktiver Tab').toHaveCount(1);
+
+    const panelId = await tabs.first().getAttribute('data-tab');
+    await expect(page.locator(`#${panelId}`), `Panel #${panelId} der ersten Leistung wird nicht angezeigt`).toBeVisible();
+    await expect(page.locator('.services__panel:visible'), 'Mehr als ein Panel sichtbar').toHaveCount(1);
+});
+
 test('Leistungen: Klick auf eine Leistung zeigt ihr Panel mit Text und Hintergrundbild', expectedResult(
     'Nach jedem Klick ist der Tab aktiv und nur sein Panel sichtbar, mit Text und Hintergrundbild'
 ), async ({ page }) => {
@@ -81,13 +96,24 @@ test('Leistungen: Klick auf eine Leistung zeigt ihr Panel mit Text und Hintergru
         await expect(panel.locator('.services__answer'), 'Text im Panel fehlt').toHaveText(/\S/);
 
         // a background image is set
-        // (tests/images.spec.ts checks for the whole page whether the file can be loaded)
+        // (tests/images.spec.ts checks for the whole page that the files can be loaded)
         const background = panel.locator('.services__bg');
         await expect(background, 'Kein Hintergrundbild hinterlegt').toHaveAttribute('style', /url\(/);
     }
 });
 
-// ─── Different content per service ──────────────────────────────
+// ─── Content per service ────────────────────────────────────────
+
+test(`Leistungen: jede Leistung hat einen Text mit mind. ${MIN_TEXT_LENGTH} Zeichen`, expectedResult(
+    `Der Text jeder Leistung hat mind. ${MIN_TEXT_LENGTH} Zeichen`
+), async ({ page }) => {
+    const services = await readServices(page);
+    for (const service of services) {
+        // expect.soft: the test keeps running, all failures are reported together at the end
+        expect.soft(service.text.length, `„${service.name}“: Text zu kurz (${service.text.length} Zeichen, mind. ${MIN_TEXT_LENGTH})`)
+            .toBeGreaterThanOrEqual(MIN_TEXT_LENGTH);
+    }
+});
 
 test('Leistungen: jede Leistung hat einen eigenen Text', expectedResult(
     'Kein Text steht bei mehr als einer Leistung'

@@ -20,7 +20,7 @@ export async function scrollToBottom(page: Page) {
     await scrollToY(page, await page.evaluate(() => document.documentElement.scrollHeight));
 }
 
-// Scroll through the whole page one screen at a time, so lazy images start loading
+// Scroll through the whole page one screen at a time, so lazy-loaded images start loading
 // and every section has been in view once
 export async function scrollThroughPage(page: Page) {
     const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);

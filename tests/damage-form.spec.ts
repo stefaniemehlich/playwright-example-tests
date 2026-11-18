@@ -57,7 +57,7 @@ const FIELD_LABEL: Record<InputField, string> = {
     upload: 'Upload',
 };
 
-// Tag per field: used by the validation group and the correction test of the field,
+// One tag per field: used by the validation group and the correction test of the field,
 // so all tests of one field can be run together, e.g. npx playwright test --grep @validierung-plz
 const VALIDATION_TAG: Record<InputField, string> = {
     firstName: '@validierung-vorname',
@@ -78,8 +78,8 @@ const REQUIRED_FIELDS: InputField[] = ['firstName', 'lastName', 'phone'];
 const ALL_FIELDS = Object.keys(FIELD_ID) as InputField[];
 
 // ─── Error messages (verbatim from index.html, RULES) ───────────
-// Left out: the "too long" messages for name, email and message –
-// maxlength cuts the input before these rules can apply
+// Not included: the "too long" messages for name, email and message –
+// maxlength truncates the input before these rules can apply
 const ERROR_MESSAGE = {
     // First name and last name (shared rule nameRule)
     name: {
@@ -134,17 +134,17 @@ const FIELD_LABEL_ON_PAGE: Record<InputField, string> = {
     upload: 'Fotos & Videos des Schadens',
 };
 
-// The overlay, the button that sends the form and the heading of the thank-you view
+// The overlay, the button that sends the form and the heading of the thank-you screen
 const overlay = (page: Page) => page.getByRole('dialog', { name: 'Schaden einreichen' });
 const submitButton = (page: Page) => overlay(page).getByRole('button', { name: 'Anfrage absenden' });
 const thankYouHeading = (page: Page) => overlay(page).getByRole('heading', { name: /^Danke für Ihre Anfrage/ });
 
 // Input element of a field, found by its label the way a visitor finds it
 const fieldInput = (page: Page, field: InputField) => overlay(page).getByLabel(FIELD_LABEL_ON_PAGE[field], { exact: true });
-// Error message below a field: a plain text without a role, so it is found by its id
+// Error message below a field: plain text without a role, so it is found by its id
 const fieldError = (page: Page, field: InputField) => page.locator(`#${FIELD_ID[field]}-error`);
 
-// Character counter below the message field, the upload area (marked red on errors)
+// Character counter below the message field, the upload area (highlighted in red on errors)
 // and the names of the selected files inside it
 const messageCounter = (page: Page) => page.locator('#sf-mitteilung-counter');
 const uploadArea = (page: Page) => page.locator('#sfUploadArea');
@@ -193,12 +193,12 @@ type TestStep = {
 };
 
 // After a submit that must fail (required fields missing or invalid values):
-// messages only at these fields, cursor in the first of them, form still open
+// messages only on these fields, cursor in the first of them, form still open
 async function expectInvalidSubmit(page: Page, fieldsWithMessage: InputField[], focusedField?: InputField) {
     // Abort if the submit must fail but no cursor position is given
     if (!focusedField) throw new Error('Testschritt ohne focusedField, obwohl das Absenden scheitern muss');
 
-    // Message only at the given fields, no hint at any other field
+    // Message only on the given fields, no hint on any other field
     await test.step('Meldungen und Cursor-Position korrekt', async () => {
         for (const field of ALL_FIELDS) {
             if (fieldsWithMessage.includes(field)) {
@@ -214,7 +214,7 @@ async function expectInvalidSubmit(page: Page, fieldsWithMessage: InputField[], 
     await expect(overlay(page), 'Schaden-Formular bleibt geöffnet').toHaveClass(/is-open/);
 }
 
-// A text field shows this message and is marked red
+// A text field shows this message and is highlighted in red
 async function expectMessage(page: Page, field: InputField, errorMessage: string) {
     await test.step('Fehlermeldung und rote Markierung', async () => {
         await expect(fieldError(page, field), 'Meldung unter dem Feld').toHaveText(errorMessage);
@@ -222,7 +222,7 @@ async function expectMessage(page: Page, field: InputField, errorMessage: string
     });
 }
 
-// A text field shows no message and is not marked red
+// A text field shows no message and is not highlighted in red
 async function expectNoMessage(page: Page, field: InputField) {
     await test.step('kein Hinweis und keine rote Markierung', async () => {
         await expect(fieldError(page, field), 'keine Meldung').toBeEmpty();
@@ -230,7 +230,7 @@ async function expectNoMessage(page: Page, field: InputField) {
     });
 }
 
-// The upload shows this message and the upload area is marked red (not the file input inside it)
+// The upload shows this message and the upload area is highlighted in red (not the file input inside it)
 async function expectUploadMessage(page: Page, errorMessage: string) {
     await test.step('Fehlermeldung und rote Markierung', async () => {
         await expect(fieldError(page, 'upload'), 'Meldung unter dem Upload-Bereich').toHaveText(errorMessage);
@@ -238,7 +238,7 @@ async function expectUploadMessage(page: Page, errorMessage: string) {
     });
 }
 
-// The upload shows no message and the upload area is not marked red
+// The upload shows no message and the upload area is not highlighted in red
 async function expectNoUploadMessage(page: Page) {
     await test.step('kein Hinweis und keine rote Markierung', async () => {
         await expect(fieldError(page, 'upload'), 'keine Meldung').toBeEmpty();
@@ -246,21 +246,33 @@ async function expectNoUploadMessage(page: Page) {
     });
 }
 
-// After a successful submit: the thank-you view with the first name replaces the form
+// After a successful submit: the thank-you screen with the first name replaces the form
 async function expectSuccessfulSubmit(page: Page, firstName = VALID_INPUTS.firstName) {
     await expect(thankYouHeading(page), 'Anzeige der Danke-Ansicht').toBeVisible();
     await expect(thankYouHeading(page), `Vorname in der Danke-Ansicht: „${firstName}“`).toHaveText(`Danke für Ihre Anfrage, ${firstName}!`);
     await expect(submitButton(page), 'Schaden-Formular ist nicht mehr sichtbar').toBeHidden();
 }
 
-// After reopening: the empty form instead of the thank-you view – no values, no messages, no red marking
+// After reopening, no field has the cursor, so none is bordered green (B3 checks that focus means green).
+// The focus is checked instead of the colour: right after opening, the 0.2 s colour transition would make
+// "not green" pass even for a field that is just turning green.
+async function expectNoActiveField(page: Page) {
+    await test.step('kein Feld aktiv (nicht grün umrandet)', async () => {
+        for (const field of ALL_FIELDS) {
+            await expect(fieldInput(page, field), `„${FIELD_LABEL[field]}“ ist nicht aktiv`).not.toBeFocused();
+        }
+    });
+}
+
+// After reopening: the empty form instead of the thank-you screen – no values, no messages, no red highlight,
+// no active field
 async function expectEmptyForm(page: Page) {
     await expect(submitButton(page), 'Formular ist sichtbar').toBeVisible();
     await expect(thankYouHeading(page), 'Danke-Ansicht ist nicht mehr sichtbar').toBeHidden();
 
     await test.step('alle Felder leer, ohne Meldung und nicht rot markiert', async () => {
         for (const field of ALL_FIELDS) {
-            // for the upload, the upload area is marked red, not the file input itself
+            // for the upload, the upload area is highlighted in red, not the file input itself
             const markedElement = field === 'upload' ? uploadArea(page) : fieldInput(page, field);
             await expect(fieldInput(page, field), `„${FIELD_LABEL[field]}“ ist leer`).toHaveValue('');
             await expect(fieldError(page, field), `keine Meldung bei „${FIELD_LABEL[field]}“`).toBeEmpty();
@@ -270,11 +282,12 @@ async function expectEmptyForm(page: Page) {
 
     await expect(messageCounter(page), 'Zähler steht wieder auf 0').toHaveText('0 / 1000');
     await expect(fileNames(page), 'kein Dateiname mehr angezeigt').toBeEmpty();
+    await expectNoActiveField(page);
 }
 
 // Open the form and run the steps one after the other: fill in, submit, check.
 // As long as required fields are missing or fields have an invalid value, the submit must fail
-// with messages at exactly these fields – once everything is filled in correctly, it must succeed.
+// with messages on exactly these fields – once everything is filled in correctly, it must succeed.
 async function runScenario(page: Page, steps: TestStep[]) {
     await openDamageForm(page);
     let missingRequiredFields = REQUIRED_FIELDS;
@@ -286,7 +299,7 @@ async function runScenario(page: Page, steps: TestStep[]) {
             missingRequiredFields = missingRequiredFields.filter(field => !step.fields.includes(field));
             // a field filled in again is valid now – unless this step gives it an invalid value
             invalidFields = [...invalidFields.filter(field => !step.fields.includes(field)), ...(step.invalidFields ?? [])];
-            // remember the first name entered last, it must appear in the thank-you view
+            // remember the first name entered last; it must appear in the thank-you screen
             if (step.fields.includes('firstName')) {
                 firstName = step.values?.firstName ?? VALID_INPUTS.firstName;
             }
@@ -305,7 +318,7 @@ async function runScenario(page: Page, steps: TestStep[]) {
     }
 }
 
-// Values of all fields as they are submitted: the text of each field, for the upload the file names
+// Values of all fields as they are submitted: the text of each field, and for the upload, the file names
 type SubmittedValues = Record<InputField, string>;
 
 // The submitted values to expect when the fields were filled in with these values
@@ -325,7 +338,7 @@ function captureSubmittedValues(page: Page) {
     }), FIELD_ID) as Promise<SubmittedValues>;
 }
 
-// The ways to close the overlay. The X at the top and the button of the thank-you view are both
+// The ways to close the overlay. The X at the top and the button of the thank-you screen are both
 // called "Schließen" – the visible text ("×" or "Schließen") tells the two apart.
 const thankYouCloseButton = (page: Page) => overlay(page).getByRole('button', { name: 'Schließen' }).filter({ hasText: 'Schließen' });
 
@@ -338,7 +351,7 @@ const CLOSE_WAYS = {
 };
 type CloseWay = keyof typeof CLOSE_WAYS;
 
-// The button "Schließen" only exists in the thank-you view – the form can be closed in all other ways
+// The button "Schließen" only exists in the thank-you screen – the form can be closed in all other ways
 const FORM_CLOSE_WAYS = (Object.keys(CLOSE_WAYS) as CloseWay[]).filter(closeWay => closeWay !== 'button');
 
 // The overlay is closed and the page behind it can be scrolled again
@@ -356,10 +369,10 @@ async function closeOverlay(page: Page, closeWay: CloseWay) {
 // ─── Overview of the test sets ──────────────────────────────────
 // From the single field to the whole overlay:
 // A  validate the values: when the messages appear (A1), then every field on its own (A2-A10)
-// B  displays in the form: character counter (B1), file names (B2)
-// C  submit: combinations of the required fields (C1), with the keyboard (C2), straight from a field (C3)
+// B  displays in the form: character counter (B1), file names (B2), border of the active field (B3)
+// C  submit: combinations of the required fields (C1), with the keyboard (C2), values tidied up without leaving the field (C3)
 // D  change values: correct (D1), add (D2), overwrite (D3)
-// E  thank-you view
+// E  thank-you screen
 // F  close the overlay
 
 // ─── Test set A: validate the values ────────────────────────────
@@ -376,15 +389,15 @@ type ValidationTest = {
 };
 
 // Text for the expected result: the value the page leaves in the field.
-// Long values (e.g. 'x'.repeat(1000)) only with their length, so the documentation stays readable
+// Long values (e.g. 'x'.repeat(1000)) are shown only by their length, so the documentation stays readable
 function expectedValueText(expectedValue: string) {
-    if (expectedValue === '') return 'Feld danach leer';
-    if (expectedValue.length > 40) return `Wert im Feld danach ${expectedValue.length} Zeichen lang`;
-    return `Wert im Feld danach „${expectedValue}“`;
+    if (expectedValue === '') return 'Feld ist danach leer';
+    if (expectedValue.length > 40) return `Feld enthält danach ${expectedValue.length} Zeichen`;
+    return `Feld enthält danach „${expectedValue}“`;
 }
 
 // Create one test per table row: enter the value, leave the field,
-// then check the message, the red marking and – if given – the value the page has changed
+// then check the message, the red highlight and – if given – the value the page has changed
 function validationTests(testCases: ValidationTest[], field: InputField) {
     for (const testCase of testCases) {
         const messageText = testCase.errorMessage
@@ -415,7 +428,7 @@ function validationTests(testCases: ValidationTest[], field: InputField) {
     }
 }
 
-// Upload: files instead of text, checked right after the selection
+// Upload: files instead of text, checked right after selection
 const MB = 1024 * 1024;
 
 const DEFAULT_FILE_SIZE = 1024;   // 1 KB
@@ -432,7 +445,7 @@ type UploadValidationTest = {
 const numberedImages = (count: number): TestFile[] => Array.from({ length: count }, (_, i) => ({ name: `bild${i + 1}.jpg` }));
 
 // Create one test per table row: select the files,
-// then check the message and the red marking of the upload area
+// then check the message and the red highlight of the upload area
 function uploadValidationTests(testCases: UploadValidationTest[]) {
     for (const testCase of testCases) {
         const expectedResultText = testCase.errorMessage
@@ -443,8 +456,8 @@ function uploadValidationTests(testCases: UploadValidationTest[]) {
         test(`${FIELD_LABEL.upload}: ${testCase.description}`,
             { ...expectedResult(expectedResultText), tag: testCase.errorMessage ? '@negativtest' : '@positivtest' },
             async ({ page }, testInfo) => {
-                // From 20 MB on, writing the files and passing them to the browser takes long – when many tests
-                // run at the same time, Firefox exceeded the 30 s. test.slow() triples the time limit for these tests
+                // From 20 MB upwards, writing the files and passing them to the browser takes a while – with many tests
+                // running in parallel, Firefox exceeded the 30 s limit. test.slow() triples the time limit for these tests
                 test.slow(totalSize >= 20 * MB, 'große Dateien');
                 await openDamageForm(page);
 
@@ -469,15 +482,27 @@ test.describe('Schaden-Formular: Werte validieren', () => {
     // ─── A1: when the messages appear ───────────────────────────
     // A text field shows its message only after the visitor has left it for the first time –
     // nobody wants to read "invalid" after the first digit. From then on the message follows every keystroke.
-    // Shown with the postal code (valid: 4 or 5 digits); index.html treats all text fields the same way.
-    test.describe('Zeitpunkt der Hinweismeldungen bei Falscheingaben', { tag: VALIDATION_TAG.postalCode }, () => {
+    // Demonstrated with the postal code (valid: 4 or 5 digits); index.html treats all text fields the same way.
+    // The switch between two different messages is shown with the phone number, which has several rules.
+    // Each test has the tag of its field, so --grep @validierung-plz only runs the postal code tests.
+    test.describe('Zeitpunkt der Hinweismeldungen bei Falscheingaben', () => {
         const postalCode = (page: Page) => fieldInput(page, 'postalCode');
         const errorMessage = ERROR_MESSAGE.postalCode.invalidLength;
 
+        // back into the field: a visitor clicks behind the last character,
+        // focus() alone would put the cursor in front of the first one
+        async function focusAtEnd(input: Locator) {
+            await input.focus();
+            await input.evaluate((element: HTMLInputElement) => element.setSelectionRange(element.value.length, element.value.length));
+        }
+
         // pressSequentially types key by key like a visitor, the cursor stays in the field
-        test(`Beim ersten Tippen keine Meldung, erst nach dem Verlassen des Feldes (${FIELD_LABEL.postalCode})`, expectedResult(
-            `Während der Eingabe von „123“ keine Meldung und keine rote Markierung; nach dem Verlassen des Feldes Meldung „${errorMessage}“, Feld rot markiert`
-        ), async ({ page }) => {
+        test(`Beim ersten Tippen keine Meldung, erst nach dem Verlassen des Feldes (${FIELD_LABEL.postalCode})`, {
+            ...expectedResult(
+                `Während der Eingabe von „123“ keine Meldung und keine rote Markierung; nach dem Verlassen des Feldes Meldung „${errorMessage}“, Feld rot markiert`
+            ),
+            tag: VALIDATION_TAG.postalCode,
+        }, async ({ page }) => {
             await openDamageForm(page);
 
             await postalCode(page).pressSequentially('123');
@@ -489,20 +514,20 @@ test.describe('Schaden-Formular: Werte validieren', () => {
         });
 
         // 3 digits are too few, 4 and 5 are valid, 6 are too many
-        test(`Nach dem ersten Verlassen des Feldes wird die Meldung bei jedem Tastendruck neu geprüft (${FIELD_LABEL.postalCode})`, expectedResult(
-            'Nach dem Verlassen des Feldes mit „123“ steht die Meldung da; beim Weitertippen verschwindet sie bei „1234“, '
-            + 'bleibt bei „12345“ weg, erscheint bei „123456“ sofort wieder und verschwindet nach dem Löschen der letzten Ziffer – '
-            + 'jeweils ohne das Feld erneut zu verlassen'
-        ), async ({ page }) => {
+        test(`Nach dem ersten Verlassen des Feldes wird die Meldung bei jedem Tastendruck neu geprüft (${FIELD_LABEL.postalCode})`, {
+            ...expectedResult(
+                'Nach dem Verlassen des Feldes mit „123“ steht die Meldung da; beim Weitertippen verschwindet sie bei „1234“, '
+                + 'bei „12345“ wird weiter nichts angezeigt, erscheint bei „123456“ sofort wieder und verschwindet nach dem Löschen der letzten Ziffer – '
+                + 'jeweils ohne das Feld erneut zu verlassen'
+            ),
+            tag: VALIDATION_TAG.postalCode,
+        }, async ({ page }) => {
             await openDamageForm(page);
             await postalCode(page).pressSequentially('123');
             await postalCode(page).blur();
             await expectMessage(page, 'postalCode', errorMessage);
 
-            // back into the field: a visitor clicks behind the last digit,
-            // focus() alone would put the cursor in front of the first one
-            await postalCode(page).focus();
-            await postalCode(page).evaluate((input: HTMLInputElement) => input.setSelectionRange(input.value.length, input.value.length));
+            await focusAtEnd(postalCode(page));
 
             const steps = [
                 { key: '4', value: '1234', valid: true },
@@ -517,6 +542,38 @@ test.describe('Schaden-Formular: Werte validieren', () => {
                     await expect(postalCode(page), 'Cursor ist noch im Feld').toBeFocused();
                     if (step.valid) await expectNoMessage(page, 'postalCode');
                     else await expectMessage(page, 'postalCode', errorMessage);
+                });
+            }
+        });
+
+        // The message text is replaced on every keystroke, not only shown or hidden:
+        // the rules are checked one after the other, so a "+" at the end hides the "too short" problem behind another one
+        test(`Bei jedem Tastendruck wechselt die Meldung direkt zur passenden (${FIELD_LABEL.phone})`, {
+            ...expectedResult(
+                `Nach dem Verlassen des Feldes mit „+(123)45“ steht „${ERROR_MESSAGE.phone.tooShort}“; `
+                + `beim Tippen von „+“ wechselt sie direkt zu „${ERROR_MESSAGE.phone.plusNotAtStart}“, `
+                + 'nach dem Löschen des „+“ wieder zurück – jeweils ohne das Feld erneut zu verlassen'
+            ),
+            tag: VALIDATION_TAG.phone,
+        }, async ({ page }) => {
+            const phone = fieldInput(page, 'phone');
+            await openDamageForm(page);
+            await phone.pressSequentially('+(123)45');
+            await phone.blur();
+            await expectMessage(page, 'phone', ERROR_MESSAGE.phone.tooShort);
+
+            await focusAtEnd(phone);
+
+            const steps = [
+                { key: '+', value: '+(123)45+', errorMessage: ERROR_MESSAGE.phone.plusNotAtStart },
+                { key: 'Backspace', value: '+(123)45', errorMessage: ERROR_MESSAGE.phone.tooShort },
+            ];
+            for (const step of steps) {
+                await test.step(`Taste „${step.key}“: im Feld steht „${step.value}“`, async () => {
+                    await phone.press(step.key);
+                    await expect(phone, 'Wert im Feld').toHaveValue(step.value);
+                    await expect(phone, 'Cursor ist noch im Feld').toBeFocused();
+                    await expectMessage(page, 'phone', step.errorMessage);
                 });
             }
         });
@@ -536,12 +593,15 @@ test.describe('Schaden-Formular: Werte validieren', () => {
             { description: 'andere Schrift', input: 'Иван' },
             { description: 'Bindestrich zwischen Buchstaben', input: 'Anne-Marie' },
             { description: 'Leerzeichen zwischen Buchstaben', input: 'Mary Ann' },
+            { description: 'mehrere Bindestriche', input: 'Marie-Luise-Charlotte' },
+            { description: 'Bindestrich und Leerzeichen gemischt', input: 'Jean-Pierre Louis' },
             { description: 'Apostroph', input: "D'Angelo" },
             { description: 'typografischer Apostroph', input: 'D’Angelo' },
             { description: 'Leerzeichen außen werden entfernt', input: '  Anna  ', expectedValue: 'Anna' },
             { description: '51 Zeichen werden abgeschnitten', input: 'A'.repeat(51), expectedValue: 'A'.repeat(50) },
 
             // NEGATIVE TESTS
+            { description: 'leer (Pflichtfeld)', input: '', errorMessage: ERROR_MESSAGE.name.firstNameEmpty },
             { description: 'nur Leerzeichen', input: '   ', errorMessage: ERROR_MESSAGE.name.firstNameEmpty },
             { description: '1 Zeichen', input: 'A', errorMessage: ERROR_MESSAGE.name.tooShort },
             { description: 'Ziffer', input: 'Anna1', errorMessage: ERROR_MESSAGE.name.invalidCharacters },
@@ -550,6 +610,7 @@ test.describe('Schaden-Formular: Werte validieren', () => {
             { description: 'Bindestrich am Ende', input: 'Anna-', errorMessage: ERROR_MESSAGE.name.misplacedSeparator },
             { description: 'doppelter Bindestrich', input: 'Anna--Lena', errorMessage: ERROR_MESSAGE.name.misplacedSeparator },
             { description: 'doppeltes Leerzeichen innen', input: 'Anna  Lena', errorMessage: ERROR_MESSAGE.name.misplacedSeparator },
+            { description: 'Bindestrich direkt neben Leerzeichen', input: 'Jean- Pierre', errorMessage: ERROR_MESSAGE.name.misplacedSeparator },
         ];
         validationTests(FIRST_NAME_TESTS, 'firstName');
     });
@@ -568,12 +629,15 @@ test.describe('Schaden-Formular: Werte validieren', () => {
             { description: 'andere Schrift', input: 'Иванов' },
             { description: 'Bindestrich zwischen Buchstaben', input: 'Müller-Lüdenscheidt' },
             { description: 'Leerzeichen zwischen Buchstaben', input: 'von Bülow' },
+            { description: 'mehrere Leerzeichen', input: 'de la Cruz' },
+            { description: 'Bindestrich und Leerzeichen gemischt', input: 'García-López de Vega' },
             { description: 'Apostroph', input: "O'Brien" },
             { description: 'typografischer Apostroph', input: 'O’Brien' },
             { description: 'Leerzeichen außen werden entfernt', input: '  Kunde  ', expectedValue: 'Kunde' },
             { description: '51 Zeichen werden abgeschnitten', input: 'B'.repeat(51), expectedValue: 'B'.repeat(50) },
 
             // NEGATIVE TESTS
+            { description: 'leer (Pflichtfeld)', input: '', errorMessage: ERROR_MESSAGE.name.lastNameEmpty },
             { description: 'nur Leerzeichen', input: '   ', errorMessage: ERROR_MESSAGE.name.lastNameEmpty },
             { description: '1 Zeichen', input: 'B', errorMessage: ERROR_MESSAGE.name.tooShort },
             { description: 'Ziffer', input: 'Kunde1', errorMessage: ERROR_MESSAGE.name.invalidCharacters },
@@ -582,6 +646,7 @@ test.describe('Schaden-Formular: Werte validieren', () => {
             { description: 'Bindestrich am Ende', input: 'Kunde-', errorMessage: ERROR_MESSAGE.name.misplacedSeparator },
             { description: 'doppelter Bindestrich', input: 'Müller--Lüdenscheidt', errorMessage: ERROR_MESSAGE.name.misplacedSeparator },
             { description: 'doppeltes Leerzeichen innen', input: 'von  Bülow', errorMessage: ERROR_MESSAGE.name.misplacedSeparator },
+            { description: 'Leerzeichen direkt neben Bindestrich', input: 'Müller -Lüdenscheidt', errorMessage: ERROR_MESSAGE.name.misplacedSeparator },
         ];
         validationTests(LAST_NAME_TESTS, 'lastName');
     });
@@ -598,9 +663,12 @@ test.describe('Schaden-Formular: Werte validieren', () => {
             { description: '+49 mit (0)', input: '+49 (0)89 123456' },
             { description: 'genau 6 Ziffern', input: '012345' },
             { description: 'genau 15 Ziffern', input: '0' + '1'.repeat(14) },
+            // only the digits count: 24 characters, but 15 digits
+            { description: 'genau 15 Ziffern mit allen erlaubten Trennzeichen', input: '+49 (0)176 / 123-456 789' },
             { description: 'Leerzeichen außen werden entfernt', input: '  0176 123456  ', expectedValue: '0176 123456' },
 
             // NEGATIVE TESTS
+            { description: 'leer (Pflichtfeld)', input: '', errorMessage: ERROR_MESSAGE.phone.empty },
             { description: 'nur Leerzeichen', input: '   ', errorMessage: ERROR_MESSAGE.phone.empty },
             { description: 'Buchstaben', input: '0176 abc', errorMessage: ERROR_MESSAGE.phone.invalidCharacters },
             { description: 'Punkt', input: '089.123456', errorMessage: ERROR_MESSAGE.phone.invalidCharacters },
@@ -609,6 +677,7 @@ test.describe('Schaden-Formular: Werte validieren', () => {
             { description: 'ohne Vorwahl', input: '176 123456', errorMessage: ERROR_MESSAGE.phone.missingAreaCode },
             { description: '5 Ziffern', input: '01234', errorMessage: ERROR_MESSAGE.phone.tooShort },
             { description: '16 Ziffern', input: '0' + '1'.repeat(15), errorMessage: ERROR_MESSAGE.phone.tooLong },
+            { description: '16 Ziffern mit allen erlaubten Trennzeichen', input: '+49 (0)176 / 123-456 7890', errorMessage: ERROR_MESSAGE.phone.tooLong },
         ];
         validationTests(PHONE_TESTS, 'phone');
     });
@@ -627,7 +696,7 @@ test.describe('Schaden-Formular: Werte validieren', () => {
             // Chromium converts umlauts in the domain itself (Punycode) – the address is valid and works
             { description: 'Umlaut in der Domain (Chromium)', input: 'name@müller.de', expectedValue: 'name@xn--mller-kva.de', browsers: ['chromium'] },
             { description: 'genau 254 Zeichen', input: 'a'.repeat(242) + '@beispiel.de' },
-            // a part of the domain (between the dots, also the ending) may have at most 63 characters
+            // each part of the domain (between the dots, including the top-level domain) may have at most 63 characters
             { description: 'Teil der Domain mit genau 63 Zeichen', input: 'name@' + 'a'.repeat(63) + '.de' },
             { description: 'Leerzeichen außen werden entfernt', input: '  name@beispiel.de  ', expectedValue: 'name@beispiel.de' },
 
@@ -645,11 +714,11 @@ test.describe('Schaden-Formular: Werte validieren', () => {
             { description: 'Umlaut vor @', input: 'jürgen@beispiel.de', errorMessage: ERROR_MESSAGE.email.invalid },
             { description: 'Umlaut in der Domain (Firefox, WebKit)', input: 'name@müller.de', errorMessage: ERROR_MESSAGE.email.invalid, browsers: ['firefox', 'webkit'] },
             { description: 'Endung aus Ziffern', input: 'name@beispiel.12', errorMessage: ERROR_MESSAGE.email.invalid },
-            // Without its own limit (63 characters per part of the domain) the page would accept these –
+            // Without its own limit (63 characters per domain part) the page would accept these –
             // the browser rejects them and would show its own (English) message
             { description: 'Teil der Domain mit 64 Zeichen', input: 'name@' + 'a'.repeat(64) + '.de', errorMessage: ERROR_MESSAGE.email.invalid },
             { description: 'Endung mit 64 Buchstaben', input: 'name@beispiel.' + 'd'.repeat(64), errorMessage: ERROR_MESSAGE.email.invalid },
-            // maxlength="254" cuts off the last character: "…@beispiel.de" becomes "…@beispiel.d", the ending is then too short
+            // maxlength="254" cuts off the last character: "…@beispiel.de" becomes "…@beispiel.d", the top-level domain is then too short
             { description: '255 Zeichen werden abgeschnitten', input: 'a'.repeat(243) + '@beispiel.de', expectedValue: 'a'.repeat(243) + '@beispiel.d', errorMessage: ERROR_MESSAGE.email.invalid },
         ];
         validationTests(EMAIL_TESTS, 'email');
@@ -735,6 +804,8 @@ test.describe('Schaden-Formular: Werte validieren', () => {
             { description: 'kurzer Text', input: 'Delle in der Fahrertür.' },
             { description: 'mehrere Zeilen', input: 'Zeile 1\nZeile 2' },
             { description: 'Sonderzeichen und Emoji', input: 'Delle <links> & rechts 🚗?!..."§$%&/()=' },
+            // realistic case: videos that are too large for the upload are sent as a link
+            { description: 'Link (z. B. zu weiteren Fotos)', input: 'Video vom Schaden: https://beispiel.de/fotos/delle.mp4' },
             { description: 'genau 1000 Zeichen', input: 'x'.repeat(1000) },
             { description: '1001 Zeichen werden abgeschnitten', input: 'x'.repeat(1001), expectedValue: 'x'.repeat(1000) },
             { description: 'Leerzeichen außen werden entfernt', input: '  Delle  ', expectedValue: 'Delle' },
@@ -821,7 +892,7 @@ test.describe('Schaden-Formular: Anzeigen im Formular', () => {
             await fieldInput(page, 'message').fill('  Delle  ');
             await expect(messageCounter(page), 'Zähler nach der Eingabe').toHaveText('9 / 1000');
 
-            await fieldInput(page, 'message').blur();   // leave the field, the page removes the outer spaces now
+            await fieldInput(page, 'message').blur();   // leave the field, the page trims leading and trailing spaces now
             await expect(fieldInput(page, 'message'), 'Leerzeichen außen entfernt').toHaveValue('Delle');
             await expect(messageCounter(page), 'Zähler nach dem Verlassen des Feldes').toHaveText('5 / 1000');
         });
@@ -852,11 +923,63 @@ test.describe('Schaden-Formular: Anzeigen im Formular', () => {
             });
         }
     });
+
+    // ─── B3: border of the active field ─────────────────────────
+    // index.html removes the browser's focus outline (outline: none) – the green border is the only sign
+    // of where the cursor is, which matters most for keyboard users.
+    // :focus (green) and .is-invalid (red) are equally specific, so the rule further down in the CSS wins:
+    // red must stay ahead, otherwise an invalid field would look fine as soon as the cursor is in it.
+    test.describe('Umrandung des aktiven Feldes', { tag: '@umrandung' }, () => {
+        // computed values of --dellen_green and --error in index.html
+        const GREEN = 'rgb(108, 209, 65)';
+        const RED = 'rgb(255, 107, 107)';
+
+        // Open the form without the 0.2 s colour transition: otherwise the first measurement right after
+        // a click still shows the old colour, and "stays red" would pass even if the border turned green
+        async function openFormWithoutTransition(page: Page) {
+            await openDamageForm(page);
+            await page.addStyleTag({ content: '.schaden-form__input { transition: none !important; }' });
+        }
+
+        for (const field of ALL_FIELDS.filter(field => field !== 'upload')) {
+            test(`${FIELD_LABEL[field]}: aktives Feld ist grün umrandet`, expectedResult(
+                'Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher'
+            ), async ({ page }) => {
+                await openFormWithoutTransition(page);
+                const input = fieldInput(page, field);
+                const borderBefore = await input.evaluate(el => getComputedStyle(el).borderTopColor);
+                expect(borderBefore, 'Rahmen ist schon vor dem Klick grün').not.toBe(GREEN);
+
+                await input.click();
+                await expect(input, 'Rahmen des aktiven Feldes').toHaveCSS('border-top-color', GREEN);
+
+                await fillFields(page, [field]);
+                await input.blur();
+                await expect(input, 'Rahmen nach dem Verlassen des Feldes').toHaveCSS('border-top-color', borderBefore);
+            });
+        }
+
+        test('Vorname: fehlerhaftes Feld bleibt rot, auch wenn es aktiv ist', expectedResult(
+            'Nach ungültiger Eingabe und Verlassen ist der Rahmen rot; nach erneutem Klick ins Feld bleibt er rot statt grün'
+        ), async ({ page }) => {
+            await openFormWithoutTransition(page);
+            const input = fieldInput(page, 'firstName');
+
+            await input.fill('Anna1');
+            await input.blur();
+            await expectMessage(page, 'firstName', ERROR_MESSAGE.name.invalidCharacters);
+            await expect(input, 'Rahmen nach dem Verlassen des Feldes').toHaveCSS('border-top-color', RED);
+
+            await input.click();
+            await expect(input, 'Feld ist wieder aktiv').toBeFocused();
+            await expect(input, 'Rahmen des aktiven, fehlerhaften Feldes').toHaveCSS('border-top-color', RED);
+        });
+    });
 });
 
 // ─── Test set C: submit ─────────────────────────────────────────
 
-// Press Tab until the element has the focus – fails if it cannot be reached with the keyboard
+// Press Tab until the element has focus – fails if it cannot be reached with the keyboard
 async function tabTo(page: Page, element: Locator, maxTabs = 20) {
     for (let i = 0; i < maxTabs; i++) {
         if (await element.evaluate(el => el === document.activeElement)) return;
@@ -920,10 +1043,10 @@ test.describe('Schaden-Formular: Absenden', () => {
         }
     });
 
-    // ─── C3: straight from a field ──────────────────────────────
+    // ─── C3: values are tidied up without leaving the field ─────
     // When a visitor submits without leaving the last field first, the field gets no blur event –
-    // so the page must tidy up the values (remove the outer spaces, join characters) during the submit itself.
-    test.describe('Direkt aus einem Feld', () => {
+    // so the page must tidy up the values (trim leading and trailing spaces, join combined characters) during the submit itself.
+    test.describe('Bereinigung der Werte ohne Verlassen des Feldes', () => {
         const DIRECT_SUBMIT_WAYS: { description: string; submit: (page: Page, field: InputField) => Promise<void> }[] = [
             { description: 'Klick auf den Button', submit: page => submit(page) },
             { description: 'Enter im Feld', submit: (page, field) => fieldInput(page, field).press('Enter') },
@@ -978,14 +1101,14 @@ test.describe('Schaden-Formular: Absenden', () => {
 
 // ─── Test set D: change values ──────────────────────────────────
 type CorrectionTest = {
-    // upload: its valid value is a file, not a text for the test title (own test in D1);
+    // upload: its valid value is a file, not text that fits in a test title (separate test in D1);
     // message: it has no invalid value (see A9)
     field: Exclude<InputField, 'upload' | 'message'>;
     invalidInput: string;
 };
 
 // Create one test: fill in the required fields, enter an invalid value and submit – the submit must fail.
-// Then overwrite the value with the valid one from VALID_INPUTS – message and red marking must disappear,
+// Then overwrite the value with the valid one from VALID_INPUTS – message and red highlight must disappear,
 // and the next submit must succeed.
 function correctionTest(field: CorrectionTest['field'], invalidInput: string) {
     test(`${FIELD_LABEL[field]}: „${invalidInput}“ absenden, dann zu „${VALID_INPUTS[field]}“ korrigieren und erneut absenden`,
@@ -1015,7 +1138,7 @@ function correctionTest(field: CorrectionTest['field'], invalidInput: string) {
 test.describe('Schaden-Formular: Werte ändern', () => {
     // ─── D1: correct invalid values ─────────────────────────────
     // Submit with an invalid value, correct it, submit again.
-    // Every test has the tag of the group (CORRECTION_TAG), the tests of a single field also the tag of their field.
+    // Every test has the tag of the group (CORRECTION_TAG), the tests for a single field also have that field's tag.
     test.describe('Fehlerhafte Werte korrigieren', { tag: CORRECTION_TAG }, () => {
         // text fields: one test per field
         const CORRECTION_TESTS: CorrectionTest[] = [
@@ -1032,7 +1155,7 @@ test.describe('Schaden-Formular: Werte ändern', () => {
         }
 
         // upload – same as correctionTest: fill in the required fields, select an invalid file and submit –
-        // the submit must fail. Then select a valid file from VALID_INPUTS – message and red marking
+        // the submit must fail. Then select a valid file from VALID_INPUTS – message and red highlight
         // of the upload area must disappear, and the next submit must succeed.
         const invalidFile = { name: 'dokument.pdf', mimeType: 'application/pdf', buffer: Buffer.from('Testdokument') };
 
@@ -1060,7 +1183,7 @@ test.describe('Schaden-Formular: Werte ändern', () => {
 
         // several errors at once, fixed one after the other – after each submit the cursor jumps
         // to the first field that still has a message (also to an optional field once all required fields are filled in).
-        // Afterwards the form must be reset: this time there really were messages and red markings to remove.
+        // Afterwards the form must be reset: this time there really were messages and red highlights to remove.
         test('Nachname fehlt, Mail und PLZ ungültig, dann nacheinander ergänzen/korrigieren und jeweils absenden', expectedResult(
             'Nach jedem Absenden Meldungen nur bei den noch fehlerhaften Feldern, Cursor im ersten davon (Nachname, dann Mail, dann PLZ); '
             + 'nach der letzten Korrektur Danke-Ansicht; nach dem Schließen und erneuten Öffnen ist das Formular leer, ohne Meldungen und ohne rote Markierungen'
@@ -1107,7 +1230,7 @@ test.describe('Schaden-Formular: Werte ändern', () => {
     });
 
     // ─── D3: overwrite values ───────────────────────────────────
-    // The thank-you view only shows the first name – so the tests check the values that are submitted
+    // The thank-you screen only shows the first name – so the tests check the values that are submitted
     test.describe('Werte überschreiben', () => {
         // before submitting
         test('Werte vor Absenden überschreiben', expectedResult(
@@ -1145,9 +1268,9 @@ test.describe('Schaden-Formular: Werte ändern', () => {
     });
 });
 
-// ─── Test set E: thank-you view ─────────────────────────────────
+// ─── Test set E: thank-you screen ───────────────────────────────
 test.describe('Schaden-Formular: Danke-Ansicht schließen', () => {
-    // E1: close the thank-you view in every way
+    // E1: close the thank-you screen in every way
     for (const closeWay of Object.keys(CLOSE_WAYS) as CloseWay[]) {
         test(`Danke-Ansicht mit ${CLOSE_WAYS[closeWay].description} schließen`, expectedResult(
             'Overlay ist geschlossen, Seite ist wieder scrollbar'
@@ -1160,7 +1283,7 @@ test.describe('Schaden-Formular: Danke-Ansicht schließen', () => {
         });
     }
 
-    // E2: close the thank-you view and reopen the form
+    // E2: close the thank-you screen and reopen the form
     test('Danke-Ansicht schließen und erneut öffnen', expectedResult(
         'Formular statt Danke-Ansicht sichtbar; alle Felder leer, keine Meldungen, keine roten Markierungen, Zähler auf „0 / 1000“, kein Dateiname'
     ), async ({ page }) => {
@@ -1174,8 +1297,8 @@ test.describe('Schaden-Formular: Danke-Ansicht schließen', () => {
         await expectEmptyForm(page);
     });
 
-    // E3: the whole way with the keyboard – the form view disappears on submit, and the focus with it.
-    // The page puts it on "Schließen", otherwise the next Tab would start somewhere behind the overlay.
+    // E3: the whole flow using only the keyboard – on submit the form disappears, and the focus with it.
+    // The page moves the focus to "Schließen", otherwise the next Tab would start somewhere behind the overlay.
     test('Fokus liegt nach dem Absenden auf „Schließen“, Enter schließt das Overlay', expectedResult(
         'Nach dem Absenden hat der Button „Schließen“ der Danke-Ansicht den Fokus; Enter schließt das Overlay, Seite ist wieder scrollbar'
     ), async ({ page }) => {
@@ -1202,7 +1325,7 @@ test.describe('Schaden-Formular: Overlay schließen', () => {
         });
     }
 
-    // F2: a click into the form keeps the overlay open
+    // F2: a click inside the form keeps the overlay open
     test('Klick in das Formular lässt das Overlay offen', expectedResult(
         'Overlay bleibt geöffnet'
     ), async ({ page }) => {
@@ -1243,5 +1366,26 @@ test.describe('Schaden-Formular: Overlay schließen', () => {
 
         await expect(messageCounter(page), 'Zähler zeigt weiterhin die Länge der Nachricht').toHaveText(`${VALID_INPUTS.message.length} / 1000`);
         await expect(fileNames(page), 'ausgewählte Datei entspricht der Vorherigen').toHaveText(VALID_INPUTS.upload.name);
+    });
+
+    // F5: closing without submitting keeps the values (F4) – so a message for an invalid value must stay as well,
+    // otherwise the field would look fine until the next submit
+    test('Meldung und roter Rahmen bleiben nach dem Schließen erhalten, kein Feld ist aktiv', expectedResult(
+        'Nach erneutem Öffnen: ungültiger Wert, Meldung und roter Rahmen wie vor dem Schließen; das zuletzt aktive Feld ist nicht mehr aktiv'
+    ), async ({ page }) => {
+        await openDamageForm(page);
+        await fieldInput(page, 'firstName').fill('Anna1');
+        // leave the field by clicking into the next one: the message appears, and the cursor
+        // is still in the form when it is closed
+        await fieldInput(page, 'lastName').click();
+        await expectMessage(page, 'firstName', ERROR_MESSAGE.name.invalidCharacters);
+        await expect(fieldInput(page, 'lastName'), 'Nachname ist vor dem Schließen aktiv').toBeFocused();
+
+        await closeOverlay(page, 'escape');
+        await openOverlay(page);
+
+        await expect(fieldInput(page, 'firstName'), 'ungültiger Wert ist noch da').toHaveValue('Anna1');
+        await expectMessage(page, 'firstName', ERROR_MESSAGE.name.invalidCharacters);
+        await expectNoActiveField(page);
     });
 });

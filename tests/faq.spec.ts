@@ -34,12 +34,32 @@ test.describe('FAQ - allgemein', () => {
                 .toBeGreaterThanOrEqual(MIN_ANSWER_LENGTH);
         }
     });
+
+    test('jede Frage hat eine eigene Antwort', expectedResult(
+        'Keine Antwort steht bei mehr als einer Frage'
+    ), async ({ page }) => {
+        await page.goto('/');
+
+        const items = page.locator('.faq__item');
+        expect(await items.count(), 'Keine FAQ-Einträge gefunden (Klasse .faq__item)').toBeGreaterThan(0);
+
+        // questions per answer text; empty answers are reported by the test above
+        const questionsByAnswer = new Map<string, string[]>();
+        for (const item of await items.all()) {
+            const question = normalizeWhitespace(await questionButton(item).textContent());
+            const answer = normalizeWhitespace(await item.locator('.faq__answer').textContent());
+            if (answer === '') continue;
+            questionsByAnswer.set(answer, [...(questionsByAnswer.get(answer) ?? []), `„${question}“`]);
+        }
+        const duplicates = [...questionsByAnswer.values()].filter(questions => questions.length > 1).map(questions => questions.join(', '));
+        expect(duplicates, 'Diese Fragen haben dieselbe Antwort').toEqual([]);
+    });
 });
 
 // ─── Layouts ────────────────────────────────────────────────────
 
 // Desktop (from 821 px): list on the left, image on the right – always exactly one question open
-// Smartphone (up to 820 px): accordion without image – all closed on load, a second click collapses
+// Smartphone (up to 820 px): accordion without image – all closed on load, a second click closes the question again
 //
 // Each layout is tested at its narrowest width: there the answers need the most lines,
 // which matters for "keine Antwort wird abgeschnitten". The behavior is the same at every width of a layout.
@@ -172,8 +192,8 @@ for (const layout of layouts) {
 
         // Also tested in the smartphone layout, although phones rarely have a keyboard:
         // the smartphone layout is not only used on phones. Anyone who zooms in on a desktop computer
-        // gets it as well (e.g. 200 % on a 1280 px wide screen leaves 640 px) – and people who zoom in
-        // because they see poorly often use the keyboard instead of the mouse.
+        // gets it as well (e.g. 200 % on a 1280 px wide screen leaves 640 px) – and people with poor eyesight
+        // who zoom in often use the keyboard instead of the mouse.
         test('Fragen lassen sich per Tastatur öffnen', expectedResult(
             'Frage ist fokussierbar und öffnet mit Enter; aria-expanded ist bei der offenen Frage "true", bei der geschlossenen "false"'
         ), async ({ page }) => {
@@ -182,7 +202,7 @@ for (const layout of layouts) {
             const items = page.locator('.faq__item');
             expect(await items.count(), 'Für diesen Test braucht es mindestens 2 Fragen').toBeGreaterThan(1);
 
-            // set the focus on the second question and open it with Enter
+            // move the focus to the second question and open it with Enter
             const question = questionButton(items.nth(1));
             await question.focus();
             await expect(question, 'Frage lässt sich nicht fokussieren').toBeFocused();
