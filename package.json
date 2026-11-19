@@ -12,15 +12,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://stefaniemehlich@github.com/stefaniemehlich/Example_Project.git"
+    "url": "git+https://stefaniemehlich@github.com/stefaniemehlich/playwright-example-tests.git"
   },
   "keywords": [],
   "license": "MIT",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/stefaniemehlich/Example_Project/issues"
+    "url": "https://github.com/stefaniemehlich/playwright-example-tests/issues"
   },
-  "homepage": "https://github.com/stefaniemehlich/Example_Project#readme",
+  "homepage": "https://github.com/stefaniemehlich/playwright-example-tests#readme",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",

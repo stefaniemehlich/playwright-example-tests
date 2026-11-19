@@ -9,7 +9,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,300;0,6..96,400;0,6..96,500;1,6..96,300;1,6..96,400&family=Instrument+Sans:wght@300;400;500;600&display=swap&font-display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,300;0,6..96,400;0,6..96,500;1,6..96,300;1,6..96,400&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
   <!-- SEO: LocalBusiness Schema -->
   <script type="application/ld+json">
@@ -23,7 +23,7 @@
     "telephone": "+4934112345",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Straße 10",
+      "streetAddress": "Musterstraße 10",
       "addressLocality": "Leipzig",
       "postalCode": "04109",
       "addressRegion": "Sachsen",
@@ -1092,7 +1092,7 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
         </thead>
         <tbody>
           <tr>
-            <td><p class="section-text footer__address">Meisterbetrieb für lackfreie Dellenreparatur in Leipzig<br>Straße 10  ·  04109 Leipzig<br>+49 341 12345</p></td>
+            <td><p class="section-text footer__address">Meisterbetrieb für lackfreie Dellenreparatur in Leipzig<br>Musterstraße 10  ·  04109 Leipzig<br>+49 341 12345</p></td>
             <td><ul class="footer__links">
               <li>Dellenreparatur</li>
               <li>Hagelschaden</li>
@@ -1553,28 +1553,28 @@ Schnelle Terminvergabe und sehr nette Betreuung. Vielen Dank!</p>
     const faqItems = [...document.querySelectorAll('.faq__item')];
 
     // open exactly this entry (null = collapse all)
-    function faqOeffnen(offen) {
+    function openFaqItem(openItem) {
       faqItems.forEach(i => {
-        i.classList.toggle('is-active', i === offen);
-        i.querySelector('.faq__question').setAttribute('aria-expanded', i === offen);
+        i.classList.toggle('is-active', i === openItem);
+        i.querySelector('.faq__question').setAttribute('aria-expanded', i === openItem);
       });
-      if (!offen) return;
+      if (!openItem) return;
       faqImg.style.opacity = '0';
-      setTimeout(() => { faqImg.src = offen.dataset.img; faqImg.style.opacity = '1'; }, 300);
+      setTimeout(() => { faqImg.src = openItem.dataset.img; faqImg.style.opacity = '1'; }, 300);
     }
 
     faqItems.forEach(item => {
       item.addEventListener('click', e => {
         if (e.target.closest('.faq__answer')) return;  // a click in the answer text changes nothing
-        if (!item.classList.contains('is-active')) faqOeffnen(item);
-        else if (isMobile()) faqOeffnen(null);         // mobile: collapse; desktop: stays open
+        if (!item.classList.contains('is-active')) openFaqItem(item);
+        else if (isMobile()) openFaqItem(null);         // mobile: collapse; desktop: stays open
       });
     });
 
     // Mobile: all collapsed on load. Switch to desktop without an open question: open the first one
-    if (isMobile()) faqOeffnen(null);
+    if (isMobile()) openFaqItem(null);
     window.addEventListener('resize', () => {
-      if (!isMobile() && !faqItems.some(i => i.classList.contains('is-active'))) faqOeffnen(faqItems[0]);
+      if (!isMobile() && !faqItems.some(i => i.classList.contains('is-active'))) openFaqItem(faqItems[0]);
     }, { passive: true });
 
     // ═══ SCHADEN MODAL ═══

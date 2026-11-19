@@ -1,8 +1,8 @@
 # Testfälle
 
-Automatisch erzeugt am 18.11.2026 mit `npm run writeDokuTestcases` – nicht von Hand bearbeiten.
+Automatisch erzeugt am 19.11.2026 mit `npm run writeDokuTestcases` – nicht von Hand bearbeiten.
 
-298 Testfälle, davon 0 ohne erwartetes Ergebnis.
+299 Testfälle, davon 0 ohne erwartetes Ergebnis.
 
 <a id="uebersicht"></a>
 
@@ -11,12 +11,12 @@ Automatisch erzeugt am 18.11.2026 mit `npm run writeDokuTestcases` – nicht von
 - [Tests der CTA-Buttons (cta-float.spec.ts)](#cta-float-spec-ts) (10)
   - [CTA-Buttons - Desktop (821 px)](#cta-float-spec-ts--cta-buttons-desktop-821-px) (5)
   - [CTA-Buttons - Smartphone (320 px)](#cta-float-spec-ts--cta-buttons-smartphone-320-px) (5)
-- [Tests des Schaden-Formulars (damage-form.spec.ts)](#damage-form-spec-ts) (222)
-  - [Schaden-Formular: Werte validieren](#damage-form-spec-ts--schaden-formular-werte-validieren) (159)
-  - [Schaden-Formular: Anzeigen im Formular](#damage-form-spec-ts--schaden-formular-anzeigen-im-formular) (19)
+- [Tests des Schaden-Formulars (damage-form.spec.ts)](#damage-form-spec-ts) (223)
+  - [Schaden-Formular: Werte validieren](#damage-form-spec-ts--schaden-formular-werte-validieren) (156)
+  - [Schaden-Formular: Anzeigen im Formular](#damage-form-spec-ts--schaden-formular-anzeigen-im-formular) (22)
   - [Schaden-Formular: Absenden](#damage-form-spec-ts--schaden-formular-absenden) (18)
   - [Schaden-Formular: Werte ändern](#damage-form-spec-ts--schaden-formular-werte-aendern) (13)
-  - [Schaden-Formular: Danke-Ansicht schließen](#damage-form-spec-ts--schaden-formular-danke-ansicht-schliessen) (6)
+  - [Schaden-Formular: Danke-Ansicht schließen](#damage-form-spec-ts--schaden-formular-danke-ansicht-schliessen) (7)
   - [Schaden-Formular: Overlay schließen](#damage-form-spec-ts--schaden-formular-overlay-schliessen) (7)
 - [Tests der FAQ (faq.spec.ts)](#faq-spec-ts) (14)
   - [FAQ - allgemein](#faq-spec-ts--faq-allgemein) (2)
@@ -70,26 +70,14 @@ Automatisch erzeugt am 18.11.2026 mit `npm run writeDokuTestcases` – nicht von
 
 <a id="damage-form-spec-ts"></a>
 
-## Tests des Schaden-Formulars (damage-form.spec.ts) (222)
+## Tests des Schaden-Formulars (damage-form.spec.ts) (223)
 
 [↑ Übersicht](#uebersicht)
 
 <details id="damage-form-spec-ts--schaden-formular-werte-validieren" open>
-<summary><b>Schaden-Formular: Werte validieren</b> (159)</summary>
+<summary><b>Schaden-Formular: Werte validieren</b> (156)</summary>
 
 <dl><dd>
-
-<details id="damage-form-spec-ts--schaden-formular-werte-validieren--zeitpunkt-der-hinweismeldungen-bei-falscheingaben" open>
-<summary><b>Zeitpunkt der Hinweismeldungen bei Falscheingaben</b> (3)</summary>
-
-<table width="100%">
-<tr><th width="40%" align="left">Testfall</th><th width="60%" align="left">Erwartetes Ergebnis</th></tr>
-<tr><td>Beim ersten Tippen keine Meldung, erst nach dem Verlassen des Feldes (PLZ)</td><td>Während der Eingabe von „123“ keine Meldung und keine rote Markierung; nach dem Verlassen des Feldes Meldung „Bitte 4 oder 5 Ziffern eingeben.“, Feld rot markiert</td></tr>
-<tr><td>Nach dem ersten Verlassen des Feldes wird die Meldung bei jedem Tastendruck neu geprüft (PLZ)</td><td>Nach dem Verlassen des Feldes mit „123“ steht die Meldung da; beim Weitertippen verschwindet sie bei „1234“, bei „12345“ wird weiter nichts angezeigt, erscheint bei „123456“ sofort wieder und verschwindet nach dem Löschen der letzten Ziffer – jeweils ohne das Feld erneut zu verlassen</td></tr>
-<tr><td>Bei jedem Tastendruck wechselt die Meldung direkt zur passenden (Telefon)</td><td>Nach dem Verlassen des Feldes mit „+(123)45“ steht „Die Nummer ist zu kurz (mind. 6 Ziffern).“; beim Tippen von „+“ wechselt sie direkt zu „Ein +-Zeichen ist nur führend erlaubt.“, nach dem Löschen des „+“ wieder zurück – jeweils ohne das Feld erneut zu verlassen</td></tr>
-</table>
-
-</details>
 
 <details id="damage-form-spec-ts--schaden-formular-werte-validieren--vorname" open>
 <summary><b>Vorname</b> (24)</summary>
@@ -333,9 +321,39 @@ Automatisch erzeugt am 18.11.2026 mit `npm run writeDokuTestcases` – nicht von
 </details>
 
 <details id="damage-form-spec-ts--schaden-formular-anzeigen-im-formular" open>
-<summary><b>Schaden-Formular: Anzeigen im Formular</b> (19)</summary>
+<summary><b>Schaden-Formular: Anzeigen im Formular</b> (22)</summary>
 
 <dl><dd>
+
+<details id="damage-form-spec-ts--schaden-formular-anzeigen-im-formular--hinweismeldungen-bei-falscheingaben" open>
+<summary><b>Hinweismeldungen bei Falscheingaben</b> (3)</summary>
+
+<table width="100%">
+<tr><th width="40%" align="left">Testfall</th><th width="60%" align="left">Erwartetes Ergebnis</th></tr>
+<tr><td>Beim ersten Tippen keine Meldung, erst nach dem Verlassen des Feldes (PLZ)</td><td>Während der Eingabe von „123“ keine Meldung und keine rote Markierung; nach dem Verlassen des Feldes Meldung „Bitte 4 oder 5 Ziffern eingeben.“, Feld rot markiert</td></tr>
+<tr><td>Nach dem ersten Verlassen des Feldes wird die Meldung bei jedem Tastendruck neu geprüft (PLZ)</td><td>Nach dem Verlassen des Feldes mit „123“ steht die Meldung da; beim Weitertippen verschwindet sie bei „1234“, bei „12345“ wird weiter nichts angezeigt, erscheint bei „123456“ sofort wieder und verschwindet nach dem Löschen der letzten Ziffer – jeweils ohne das Feld erneut zu verlassen</td></tr>
+<tr><td>Meldung wechselt bei neuer/ anderer Falscheingabe (Telefon)</td><td>Nach dem Verlassen des Feldes mit „+(123)45“ steht „Die Nummer ist zu kurz (mind. 6 Ziffern).“; beim Tippen von „+“ wechselt sie direkt zu „Ein +-Zeichen ist nur führend erlaubt.“, nach dem Löschen des „+“ wieder zurück – jeweils ohne das Feld erneut zu verlassen</td></tr>
+</table>
+
+</details>
+
+<details id="damage-form-spec-ts--schaden-formular-anzeigen-im-formular--umrandung-des-aktiven-feldes" open>
+<summary><b>Umrandung des aktiven Feldes</b> (9)</summary>
+
+<table width="100%">
+<tr><th width="40%" align="left">Testfall</th><th width="60%" align="left">Erwartetes Ergebnis</th></tr>
+<tr><td>Vorname: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
+<tr><td>Nachname: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
+<tr><td>Telefon: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
+<tr><td>Mail: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
+<tr><td>Straße: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
+<tr><td>PLZ: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
+<tr><td>Ort: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
+<tr><td>Mitteilung: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
+<tr><td>Vorname: fehlerhaftes Feld bleibt rot, auch wenn es aktiv ist</td><td>Nach ungültiger Eingabe und Verlassen ist der Rahmen rot; nach erneutem Klick ins Feld bleibt er rot statt grün</td></tr>
+</table>
+
+</details>
 
 <details id="damage-form-spec-ts--schaden-formular-anzeigen-im-formular--zeichenzaehler-mitteilung" open>
 <summary><b>Zeichenzähler Mitteilung</b> (6)</summary>
@@ -361,24 +379,6 @@ Automatisch erzeugt am 18.11.2026 mit `npm run writeDokuTestcases` – nicht von
 <tr><td>Mehrere Dateien, mit Komma getrennt</td><td>Im Upload-Bereich steht „delle.jpg, kratzer.jpg“</td></tr>
 <tr><td>Neue Auswahl ersetzt die alte</td><td>Im Upload-Bereich steht „kratzer.jpg“</td></tr>
 <tr><td>Auswahl entfernt</td><td>Im Upload-Bereich steht kein Dateiname mehr</td></tr>
-</table>
-
-</details>
-
-<details id="damage-form-spec-ts--schaden-formular-anzeigen-im-formular--umrandung-des-aktiven-feldes" open>
-<summary><b>Umrandung des aktiven Feldes</b> (9)</summary>
-
-<table width="100%">
-<tr><th width="40%" align="left">Testfall</th><th width="60%" align="left">Erwartetes Ergebnis</th></tr>
-<tr><td>Vorname: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
-<tr><td>Nachname: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
-<tr><td>Telefon: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
-<tr><td>Mail: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
-<tr><td>Straße: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
-<tr><td>PLZ: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
-<tr><td>Ort: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
-<tr><td>Mitteilung: aktives Feld ist grün umrandet</td><td>Nach dem Klick ins Feld ist der Rahmen grün; nach dem Verlassen (mit gültigem Wert) wieder wie vorher</td></tr>
-<tr><td>Vorname: fehlerhaftes Feld bleibt rot, auch wenn es aktiv ist</td><td>Nach ungültiger Eingabe und Verlassen ist der Rahmen rot; nach erneutem Klick ins Feld bleibt er rot statt grün</td></tr>
 </table>
 
 </details>
@@ -459,7 +459,7 @@ Automatisch erzeugt am 18.11.2026 mit `npm run writeDokuTestcases` – nicht von
 <tr><td>PLZ: „1O20“ absenden, dann zu „12345“ korrigieren und erneut absenden</td><td>Erstes Absenden scheitert: Meldung nur bei diesem Feld, Feld rot markiert, Cursor im Feld. Nach der Korrektur verschwinden Meldung und rote Markierung, zweites Absenden zeigt die Danke-Ansicht.</td></tr>
 <tr><td>Ort: „0rt“ absenden, dann zu „Ort“ korrigieren und erneut absenden</td><td>Erstes Absenden scheitert: Meldung nur bei diesem Feld, Feld rot markiert, Cursor im Feld. Nach der Korrektur verschwinden Meldung und rote Markierung, zweites Absenden zeigt die Danke-Ansicht.</td></tr>
 <tr><td>Upload: „dokument.pdf“ absenden, dann „delle.jpg“ auswählen und erneut absenden</td><td>Erstes Absenden scheitert: Meldung nur beim Upload, Upload-Bereich rot markiert, Cursor im Upload. Nach der neuen Auswahl verschwinden Meldung und rote Markierung, zweites Absenden zeigt die Danke-Ansicht.</td></tr>
-<tr><td>Nachname fehlt, Mail und PLZ ungültig, dann nacheinander ergänzen/korrigieren und jeweils absenden</td><td>Nach jedem Absenden Meldungen nur bei den noch fehlerhaften Feldern, Cursor im ersten davon (Nachname, dann Mail, dann PLZ); nach der letzten Korrektur Danke-Ansicht; nach dem Schließen und erneuten Öffnen ist das Formular leer, ohne Meldungen und ohne rote Markierungen</td></tr>
+<tr><td>Nachname fehlt, Mail und PLZ ungültig, dann nacheinander ergänzen/korrigieren und jeweils absenden</td><td>Nach jedem Absenden Meldungen nur bei den noch fehlerhaften Feldern, Cursor im ersten davon (Nachname, dann Mail, dann PLZ); nach der letzten Korrektur Danke-Ansicht</td></tr>
 </table>
 
 </details>
@@ -470,7 +470,7 @@ Automatisch erzeugt am 18.11.2026 mit `npm run writeDokuTestcases` – nicht von
 <table width="100%">
 <tr><th width="40%" align="left">Testfall</th><th width="60%" align="left">Erwartetes Ergebnis</th></tr>
 <tr><td>Vorname gültig, dann absenden, dann gültigen Nachnamen ergänzen, absenden, dann gültiges Telefon ergänzen, absenden</td><td>Erstes Absenden scheitert: Meldungen bei Nachname und Telefon, Cursor im Nachnamen; zweites scheitert: Meldung nur bei Telefon, Cursor im Telefon; drittes zeigt die Danke-Ansicht</td></tr>
-<tr><td>Vorname + Nachname gültig, dann absenden, dann alle anderen Eingaben ergänzen</td><td>Erstes Absenden scheitert: Meldung bei Telefon, Cursor im Telefon; nach dem Ergänzen zeigt das zweite Absenden die Danke-Ansicht</td></tr>
+<tr><td>Vorname + Nachname gültig, dann absenden, dann alle anderen Eingaben ergänzen, absenden</td><td>Erstes Absenden scheitert: Meldung bei Telefon, Cursor im Telefon; nach dem Ergänzen zeigt das zweite Absenden die Danke-Ansicht</td></tr>
 </table>
 
 </details>
@@ -491,7 +491,7 @@ Automatisch erzeugt am 18.11.2026 mit `npm run writeDokuTestcases` – nicht von
 </details>
 
 <details id="damage-form-spec-ts--schaden-formular-danke-ansicht-schliessen" open>
-<summary><b>Schaden-Formular: Danke-Ansicht schließen</b> (6)</summary>
+<summary><b>Schaden-Formular: Danke-Ansicht schließen</b> (7)</summary>
 
 <table width="100%">
 <tr><th width="40%" align="left">Testfall</th><th width="60%" align="left">Erwartetes Ergebnis</th></tr>
@@ -499,7 +499,8 @@ Automatisch erzeugt am 18.11.2026 mit `npm run writeDokuTestcases` – nicht von
 <tr><td>Danke-Ansicht mit X oben rechts schließen</td><td>Overlay ist geschlossen, Seite ist wieder scrollbar</td></tr>
 <tr><td>Danke-Ansicht mit Escape-Taste schließen</td><td>Overlay ist geschlossen, Seite ist wieder scrollbar</td></tr>
 <tr><td>Danke-Ansicht mit Klick auf den dunklen Rand schließen</td><td>Overlay ist geschlossen, Seite ist wieder scrollbar</td></tr>
-<tr><td>Danke-Ansicht schließen und erneut öffnen</td><td>Formular statt Danke-Ansicht sichtbar; alle Felder leer, keine Meldungen, keine roten Markierungen, Zähler auf „0 / 1000“, kein Dateiname</td></tr>
+<tr><td>Danke-Ansicht schließen und Overlay erneut öffnen</td><td>Formular statt Danke-Ansicht sichtbar; alle Felder leer, keine Meldungen, keine roten Markierungen, Zähler auf „0 / 1000“, kein Dateiname</td></tr>
+<tr><td>Nach dem Absenden zeigen Felder ihre Meldung erst nach dem Verlassen</td><td>PLZ ausgefüllt, verlassen und abgeschickt; nach dem Schließen und erneuten Öffnen während der Eingabe von „123“ keine Meldung, nach dem Verlassen des Feldes Meldung „Bitte 4 oder 5 Ziffern eingeben.“, Feld rot markiert</td></tr>
 <tr><td>Fokus liegt nach dem Absenden auf „Schließen“, Enter schließt das Overlay</td><td>Nach dem Absenden hat der Button „Schließen“ der Danke-Ansicht den Fokus; Enter schließt das Overlay, Seite ist wieder scrollbar</td></tr>
 </table>
 

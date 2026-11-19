@@ -3,8 +3,8 @@ repository: the contents of `tests/`, `scripts/`, and configuration files
 (e.g. `playwright.config.ts`, `eslint.config.mjs`, `tsconfig.json`,
 `package.json`).
 
-It does NOT apply to the example website itself (`index.html`, `css/`,
-`images/`, and its content and design), which is not licensed for reuse.
+It does NOT apply to the example website itself (`index.html`, `images/`,
+and its content and design), which is not licensed for reuse.
 
 MIT License
 

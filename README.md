@@ -1,8 +1,8 @@
 # Playwright Tests for an Example Website
 
-[![Playwright Tests](https://github.com/stefaniemehlich/Example_Project/actions/workflows/playwright.yml/badge.svg)](https://github.com/stefaniemehlich/Example_Project/actions/workflows/playwright.yml)
+[![Playwright Tests](https://github.com/stefaniemehlich/playwright-example-tests/actions/workflows/playwright.yml/badge.svg)](https://github.com/stefaniemehlich/playwright-example-tests/actions/workflows/playwright.yml)
 
-🔗 [Live demo](https://stefaniemehlich.github.io/Example_Project/)
+🔗 [Live demo](https://stefaniemehlich.github.io/playwright-example-tests/)
 
 ![Screenshot of the example website](docs/screenshot.png)
 
@@ -10,11 +10,11 @@ This is my first example project with Playwright: automated end-to-end tests for
 
 ## At a glance
 
-- 298 test cases in 12 test files, each run in Chromium, Firefox, and WebKit (894 test runs)
+- 299 test cases in 12 test files, each run in Chromium, Firefox, and WebKit (897 test runs)
 - TypeScript with type checking
 - Shared helper functions in `tests/helpers/`
 - ESLint with the recommended rules for JavaScript, TypeScript, and Playwright, plus a type-aware rule that catches missing `await`
-- [GitHub Actions](https://github.com/stefaniemehlich/Example_Project/actions): type checking, linting, and all tests on every push to `main` and on every pull request; on CI, failed tests are retried up to two times, and each run uploads the full HTML test report as a downloadable artifact (kept for 30 days)
+- [GitHub Actions](https://github.com/stefaniemehlich/playwright-example-tests/actions): type checking, linting, and all tests on every push to `main` and on every pull request; on CI, failed tests are retried up to two times, and each run uploads the full HTML test report as a downloadable artifact (kept for 30 days)
 - Every test case has a documented expected result; from these, a script generates
   the overview in [`dokuTestcases.md`](dokuTestcases.md)
 - Developing the tests revealed several weaknesses on the page, e.g. contradictory
@@ -26,26 +26,31 @@ This is my first example project with Playwright: automated end-to-end tests for
 
 | Area | Test file | Content |
 |---|---|---|
-| "Check damage" form | `damage-form.spec.ts` | Validation of every field (including when the messages appear and change), character counter, file names, and the green border of the active field, required fields and submitting, the values that are actually submitted, correcting, adding, and overwriting values, thank-you screen, closing and reopening the overlay |
+| "Check damage" form | `damage-form.spec.ts` | Validation of every field; when the error messages appear and change, the green border of the active field, character counter, file names; required fields and submitting, the values that are actually submitted; correcting, adding, and overwriting values; thank-you screen; closing and reopening the overlay |
 | Floating buttons | `cta-float.spec.ts` | Visibility, position while scrolling, buttons do not cover the footer, WhatsApp link, "Check damage" button opens the form overlay |
 | Gallery and reviews | `gallery.spec.ts`, `reviews.spec.ts` | Function of the arrows, infinite loop (with the progress bar or dots always showing the current position), automatic rotation; for the reviews also their content, the "… months ago" text, and that they are fully visible at different screen widths |
-| Services | `services.spec.ts` | First service active on load, switching between services; each service has its own text (at least 50 characters) and background image |
-| FAQ | `faq.spec.ts` | Expand/collapse on desktop and smartphone, every question has its own answer (at least 50 characters) and, on desktop, its own image, keyboard navigation, no cut-off answers |
+| Services | `services.spec.ts` | The first service is active on load, switching between services; each service has its own text (at least 50 characters) and background image |
+| FAQ | `faq.spec.ts` | Expand/collapse on desktop and smartphone, keyboard navigation, no cut-off answers; every question has its own answer (at least 50 characters) and, on desktop, its own image |
 | Navigation and footer | `navbar*.spec.ts`, `footer.spec.ts` | Internal and external links, logo scrolls back to the top, social links open in a new tab |
 | Page in general | `homepage.spec.ts`, `images.spec.ts`, `seo.spec.ts` | Loads without errors, no horizontal scrolling, fade-in while scrolling, all images load (including lazy loading), SEO basics and structured data |
 
 ## Main focus: the damage form
 
-The 222 tests in `damage-form.spec.ts` best show how I design tests:
+The 223 tests in `damage-form.spec.ts` best show how I design tests:
 
-- **Table-driven test data:** each row is a test case with an input and an
-  expected message. A new case is a new row.
+- **Table-driven test data:** the validation of every field and other recurring
+  cases (e.g. the character counter, combinations of required fields, the ways
+  to close the overlay) are defined as tables. Each row is a test case, for the
+  validation often with an input and an expected message.
+  Adding a case takes only a new row, no new test code.
 - **Boundary values:** e.g. 50 and 51 characters for the name field, 15 and 16
   digits for the phone number (with and without separators, since only digits
   count), 63 and 64 characters for one part of an email domain, 20 MB and
   20 MB + 1 byte for the upload.
-- **Positive and negative tests:** the validation tests are tagged as one or
-  the other and can be run separately. Each form field has its own tag as well.
+- **Negative tests:** tests that deliberately enter invalid or missing values
+  and expect an error are tagged `@negative-test`. They can be run on their own,
+  or filtered in the HTML report (`@negative-test`, or `!@negative-test` for all
+  other tests).
 - **Flows:** combinations of required fields, adding missing information
   afterwards, correcting invalid values, several errors at once, submitting
   with the keyboard or straight from a field, reopening the form before
@@ -110,8 +115,9 @@ one already running there).
 | `npx playwright test --project=chromium` | all tests in one browser only |
 | `npx playwright test --ui` | view and run tests individually |
 | `npx playwright show-report` | open the HTML report of the last run |
-| `npx playwright test --grep @negativtest` | only the negative tests |
-| `npx playwright test --grep @validierung-plz` | all tests of one form field (here: postal code) |
+| `npx playwright test --grep @negative-test` | only the negative tests |
+| `npx playwright test --grep-invert @negative-test` | all tests except the negative tests |
+| `npx playwright test --grep "PLZ"` | all tests with a given text in their title (here: postal code) |
 | `npm run lint` | run ESLint |
 | `npm run typecheck` | run the TypeScript type check |
 | `npm run writeDokuTestcases` | regenerate `dokuTestcases.md` |
@@ -120,5 +126,5 @@ one already running there).
 
 The Playwright tests and tooling (`tests/`, `scripts/`, configuration files) are
 MIT-licensed — see [LICENSE](LICENSE), feel free to reuse them. The example
-website itself (`index.html`, `css/`, `images/`, its content and design) is
+website itself (`index.html`, `images/`, its content and design) is
 **not** covered by this license and may not be copied or reused.
